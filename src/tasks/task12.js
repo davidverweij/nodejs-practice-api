@@ -2,8 +2,8 @@ const fs = require('fs');
 const csvtojson = require('csvtojson');
 const { pipeline } = require('stream');
 
-const inFile = './csv/task12.csv';
-const outFile = './csv/task12.txt';
+const inFile = './src/csv/task12.csv';
+const outFile = './src/csv/task12.txt';
 
 // read in csv, convert to json and write to text
 pipeline(
