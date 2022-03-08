@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "task11": "nodemon src/task11.js",
-    "task12": "nodemon src/task12.js",
+    "task11": "nodemon src/task11.mjs",
+    "task12": "nodemon src/task12.mjs",
     "task11b": "nodemon lib/task11.js",
     "task12b": "nodemon lib/task12.js",
     "build": "./node_modules/.bin/babel src --out-dir lib"
