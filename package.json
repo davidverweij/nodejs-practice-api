@@ -1,0 +1,24 @@
+{
+  "name": "epam_nodejs_mentoring",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "task11": "nodemon task11.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidverweij/epam_nodejs_mentoring.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davidverweij/epam_nodejs_mentoring/issues"
+  },
+  "homepage": "https://github.com/davidverweij/epam_nodejs_mentoring#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
