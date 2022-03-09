@@ -11,7 +11,7 @@ function reverseString(source) {
 // Listen for stdin events, transform and write to stdout
 process.stdin.on('data', (chunk) => {
     // remove newline chars
-    let source = chunk.toString().replace(/\r?\n|\r/g, "");
-    let reversed = reverseString(source);
+    const source = chunk.toString().replace(/\r?\n|\r/g, "");
+    const reversed = reverseString(source);
     console.log(reversed);
 });
