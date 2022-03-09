@@ -3,34 +3,59 @@ import { v4 as uuid } from 'uuid';
 
 const app = express();
 const port = 3000;
+
 app.disable('x-powered-by')
+app.use(express.json())
 
 // In-service memory user collection
 const usersDB = [];
 
-// helper method to filter soft-deleted users from the 'db'
+// type User = {
+//     id: string;
+//     login: string;
+//     password: string;
+//     age: string;
+//     isDeleted: boolean;
+// }
+
+/**
+ * helper method to filter soft-deleted users from the 'db'
+ *
+ * @param {String} id the id of the user to be found
+ * @return {Number} the index of the user in the DB, or -1
+ */
 function findUserIndex(id) {
     const index = usersDB.findIndex(user => user.id === id)
-    if (index >= 0 && !users[index].isDeleted) {
+    if (index >= 0 && !usersDB[index].isDeleted) {
         return index;
     }
-    return -1; // same return as not found by 'findIndex'
+    return -1;
 }
 
-// helper method to retrieve (undeleted) users based on a filter
+/**
+ * helper method to retrieve (undeleted) users based on a filter
+ * 
+ * Assumes (from task) that limit is applied to the source, 
+ * not the result after searching
+ * 
+ * @param {String} loginSubstring the substring to filter user logins with
+ * @param {Number} [limit=-1] limiter for searching (can). Handles other types than Numbers internally
+ * @return {[User]} list of users founds based on query
+ */
 function getAutoSuggestUsers(loginSubstring, limit = -1) {
-    // NOTE: Assumed from instructions that limit is applied
-    // to the source, not the result after searching
 
     // limit search, ignores 0, negative limits, nulls and NaNs
     const searchLimit = (limit > 0) ? limit : usersDB.length;
-    console.log(searchLimit);
 
     let users = usersDB
         .slice(0, searchLimit)
-        .filter(user => user.login.includes(loginSubstring));
+        .filter(user => user.login.includes(loginSubstring))
+        .map((user) => {
+            // omit isDeleted from return payload
+            const { isDeleted, ...rest } = user;
+            return rest;
+        });
 
-    console.log(users);
     // return early if no matches found
     if (!users) return []
 
@@ -46,23 +71,12 @@ function getAutoSuggestUsers(loginSubstring, limit = -1) {
     return users;
 }
 
-// type User = {
-//     id: string;
-//     login: string;
-//     password: string;
-//     age: string;
-//     isDeleted: boolean;
-// }
-
-// Config
-app.use(express.json())
-
-
-// Get 'database' (for testing)
+// Get copy of DB (for debugging/testing)
 app.get('/allusers', (req, res) => {
     res.json(usersDB);
 });
 
+// Query DB based on substring for login
 app.get('/suggestuser', (req, res) => {
     const { limit, filter } = req.query;
     if (filter) {
@@ -71,13 +85,13 @@ app.get('/suggestuser', (req, res) => {
     return res.status(400).json({ message: 'Please include a \'filter=\' parameter. Optionally add a \'limit\'.' })
 });
 
-
 // Get user by ID
 app.get('/user/:id', (req, res) => {
     const id = req.params.id;
     const userIndex = findUserIndex(id);
     if (userIndex >= 0) {
-        res.status(200).json(usersDB[userIndex]);
+        const { isDeleted, ...user } = usersDB[userIndex];
+        res.status(200).json(user);
     } else {
         res.status(404).json({ message: `User '${id}' was not found.` })
     }
@@ -87,6 +101,7 @@ app.get('/user/:id', (req, res) => {
 app.post('/user', (req, res) => {
     const newUser = req.body;
     newUser.id = uuid();
+    newUser.isDeleted = false;
     usersDB.push(newUser);
     res.status(201).json({ id: newUser.id });
 })
@@ -106,7 +121,7 @@ app.put('/user/:id', (req, res) => {
     }
 });
 
-// Delete user by ID
+// Soft-delete user by ID
 app.delete('/user/:id', (req, res) => {
     const id = req.params.id;
     const userIndex = findUserIndex(id);
@@ -120,4 +135,5 @@ app.delete('/user/:id', (req, res) => {
     }
 });
 
+// Start app
 app.listen(port, () => { console.log(`Server is listening on localhost:${port}`) });
