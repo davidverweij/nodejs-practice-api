@@ -1,7 +1,6 @@
 {
-    "parser": "babel-eslint",
-    "plugins": [
-    ],
+    "parser": "@babel/eslint-parser",
+    "plugins": [],
     "env": {
         "browser": true,
         "node": true,
@@ -26,7 +25,7 @@
             "restParams": true,
             "spread": true,
             "superInFunctions": true,
-            "templateStrings": true,
+            "templateStrings": true
         }
     },
     "rules": {
@@ -80,7 +79,7 @@
             2,
             {
                 "allowKeywords": true,
-                "allowPattern": "^([a-z]+(_[a-z]+)+)|[A-Z]+|[A-Z]{1}[a-z]+$" 
+                "allowPattern": "^([a-z]+(_[a-z]+)+)|[A-Z]+|[A-Z]{1}[a-z]+$"
             }
         ],
         "eqeqeq": 2,
@@ -163,7 +162,12 @@
         "no-shadow": 2,
         "no-undef-init": 2,
         "no-undef": 2,
-        "no-unused-vars": 2,
+        "no-unused-vars": [
+            2,
+            {
+                "ignoreRestSiblings": true
+            }
+        ],
         // Node.js
         "callback-return": 2,
         "no-mixed-requires": 2,
@@ -224,8 +228,7 @@
             4,
             {
                 "ignoreUrls": true,
-                "ignoreComments": false,
-                "ignorePattern": "^\\s*(const|let|var)\\s+\\w+\\s+\\=\\s+\\/.*\\/(|i|g|m|ig|im|gm|igm);?$"
+                "ignoreComments": false
             }
         ],
         "max-nested-callbacks": [
@@ -311,7 +314,6 @@
                 ]
             }
         ],
-
         // Legacy
         "max-depth": [
             0,
