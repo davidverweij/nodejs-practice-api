@@ -20,4 +20,13 @@ Run `npm run task21`. Servers a CRUD API on [localhost:3000](localhost:3000). En
         "age": "string"
     }
     ```
-- 
+- `PUT /user/{id}` to update a user by ID. 
+    Expected body:
+    ```json
+    {
+        "login":"string",
+        "password":"string",
+        "age": "string"
+    }
+    ```
+- `DELETE /user/{id}` to (soft) delete a user by ID.

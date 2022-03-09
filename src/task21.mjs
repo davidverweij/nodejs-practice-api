@@ -114,6 +114,7 @@ app.put('/user/:id', (req, res) => {
     if (userIndex >= 0) {
         const updateUser = req.body;
         updateUser.id = id;
+        updateUser.isDeleted = false;
         usersDB[userIndex] = updateUser;
         res.status(204).send();
     } else {
