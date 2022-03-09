@@ -5,8 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "task11": "nodemon --exec babel-node src/task11.js",
-    "task12": "nodemon --exec babel-node src/task12.js"
+    "task11": "nodemon src/task11.mjs",
+    "task12": "nodemon src/task12.mjs",
+    "task21": "nodemon src/task21.mjs",
+    "task11b": "nodemon lib/task11.js",
+    "task12b": "nodemon lib/task12.js",
+    "build": "./node_modules/.bin/babel src --out-dir lib"
   },
   "repository": {
     "type": "git",
@@ -24,10 +28,13 @@
     "@babel/core": "^7.17.5",
     "@babel/node": "^7.16.8",
     "@babel/preset-env": "^7.16.11",
+    "eslint": "^8.10.0",
     "nodemon": "^2.0.15"
   },
   "dependencies": {
     "core-js": "^3.21.1",
-    "csvtojson": "^2.0.10"
+    "csvtojson": "^2.0.10",
+    "express": "^4.17.3",
+    "uuid": "^8.3.2"
   }
 }
