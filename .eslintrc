@@ -165,7 +165,7 @@
         "no-unused-vars": [
             2,
             {
-                "ignoreRestSiblings": true
+                "ignoreRestSiblings": true // ignored unused spread operator vars
             }
         ],
         // Node.js

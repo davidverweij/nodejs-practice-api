@@ -1,22 +1,40 @@
 import express from 'express';
+import * as Joi from 'joi';
+import { createValidator } from 'express-joi-validation';
 import { v4 as uuid } from 'uuid';
 
 const app = express();
+const validator = createValidator({});
 const port = 3000;
 
-app.disable('x-powered-by')
-app.use(express.json())
+app.disable('x-powered-by');
+app.use(express.json());
 
 // In-service memory user collection
 const usersDB = [];
 
-// type User = {
-//     id: string;
-//     login: string;
-//     password: string;
-//     age: string;
-//     isDeleted: boolean;
-// }
+// Schemas
+const idSchema = Joi.object({
+    id: Joi.string().guid().required()
+});
+
+const userSchema = Joi.object({
+    login: Joi.string().regex(/^[a-zA-Z]\w{5,29}$/).required()
+        .messages({ // expand error message for clarity
+            'string.pattern.base': 'login should be between 6 and 30 characters (letters, digits or _), without spaces, and must start with a letter'
+        }),
+    password: Joi.string().regex(/^[a-zA-Z0-9]{8,30}/).required()
+        .messages({ // expand error message for clarity
+            'string.pattern.base': 'password should be between 8 and 30 alphanumeric characters (letters or digits) without punctuation or spaces'
+        }),
+    age: Joi.number().min(4).max(130).required() // number between 4 and 130
+});
+
+const querySchema = Joi.object({
+    filter: Joi.string().required(),
+    limit: Joi.number().min(1)
+});
+
 
 /**
  * helper method to filter soft-deleted users from the 'db'
@@ -25,7 +43,7 @@ const usersDB = [];
  * @return {Number} the index of the user in the DB, or -1
  */
 function findUserIndex(id) {
-    const index = usersDB.findIndex(user => user.id === id)
+    const index = usersDB.findIndex(user => user.id === id);
     if (index >= 0 && !usersDB[index].isDeleted) {
         return index;
     }
@@ -34,30 +52,29 @@ function findUserIndex(id) {
 
 /**
  * helper method to retrieve (undeleted) users based on a filter
- * 
- * Assumes (from task) that limit is applied to the source, 
+ *
+ * Assumes (from task) that limit is applied to the source,
  * not the result after searching
- * 
+ *
  * @param {String} loginSubstring the substring to filter user logins with
- * @param {Number} [limit=-1] limiter for searching (can). Handles other types than Numbers internally
+ * @param {Number} [limit=-1] limiter for search results
  * @return {[User]} list of users founds based on query
  */
 function getAutoSuggestUsers(loginSubstring, limit = -1) {
-
     // limit search, ignores 0, negative limits, nulls and NaNs
     const searchLimit = (limit > 0) ? limit : usersDB.length;
 
-    let users = usersDB
-        .slice(0, searchLimit)
+    const users = usersDB
         .filter(user => user.login.includes(loginSubstring))
         .map((user) => {
             // omit isDeleted from return payload
             const { isDeleted, ...rest } = user;
             return rest;
-        });
+        })
+        .slice(0, searchLimit);
 
     // return early if no matches found
-    if (!users) return []
+    if (!users) return [];
 
     // compare login for sorting, case in-sensitive
     users.sort((a, b) => {
@@ -77,34 +94,34 @@ app.get('/allusers', (req, res) => {
 });
 
 // Query DB based on substring for login
-app.get('/suggestuser', (req, res) => {
+app.get('/suggestuser', validator.query(querySchema), (req, res) => {
     const { limit, filter } = req.query;
     if (filter) {
-        return res.status(200).json(getAutoSuggestUsers(filter, parseInt(limit)));
+        return res.status(200).json(getAutoSuggestUsers(filter, limit));
     }
-    return res.status(400).json({ message: 'Please include a \'filter=\' parameter. Optionally add a \'limit\'.' })
+    return res.status(400).json({ message: 'Please include a \'filter=\' parameter. Optionally add a \'limit\'.' });
 });
 
 // Get user by ID
-app.get('/user/:id', (req, res) => {
+app.get('/user/:id', validator.params(idSchema), (req, res) => {
     const id = req.params.id;
     const userIndex = findUserIndex(id);
     if (userIndex >= 0) {
         const { isDeleted, ...user } = usersDB[userIndex];
         res.status(200).json(user);
     } else {
-        res.status(404).json({ message: `User '${id}' was not found.` })
+        res.status(404).json({ message: `User '${id}' was not found.` });
     }
 });
 
 // Create user
-app.post('/user', (req, res) => {
+app.post('/user', validator.body(userSchema), (req, res) => {
     const newUser = req.body;
     newUser.id = uuid();
     newUser.isDeleted = false;
     usersDB.push(newUser);
     res.status(201).json({ id: newUser.id });
-})
+});
 
 // Update user by ID
 app.put('/user/:id', (req, res) => {
@@ -118,7 +135,7 @@ app.put('/user/:id', (req, res) => {
         usersDB[userIndex] = updateUser;
         res.status(204).send();
     } else {
-        res.status(404).json({ message: `User '${id}' was not found.` })
+        res.status(404).json({ message: `User '${id}' was not found.` });
     }
 });
 
@@ -132,9 +149,11 @@ app.delete('/user/:id', (req, res) => {
         usersDB[userIndex].isDeleted = true; // soft-delete
         res.status(204).send();
     } else {
-        res.status(404).json({ message: `User '${id}' was not found.` })
+        res.status(404).json({ message: `User '${id}' was not found.` });
     }
 });
 
 // Start app
-app.listen(port, () => { console.log(`Server is listening on localhost:${port}`) });
+app.listen(port, () => {
+    console.log(`Server is listening on localhost:${port}`);
+});
