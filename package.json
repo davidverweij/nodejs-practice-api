@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "task11": "nodemon --exec babel-node src/task11.js",
-    "task12": "nodemon --exec babel-node src/task12.js",
+    "task11": "nodemon --exec babel-node misc/task11.js",
+    "task12": "nodemon --exec babel-node misc/task12.js",
     "task21": "nodemon --exec babel-node src/task21.js"
   },
   "repository": {
