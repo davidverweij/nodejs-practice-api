@@ -1,6 +1,11 @@
 import express from 'express';
-import * as Joi from 'joi';
-import { createValidator } from 'express-joi-validation';
+import Joi from 'joi';
+import {
+    ContainerTypes,
+    ValidatedRequest,
+    ValidatedRequestSchema,
+    createValidator
+} from 'express-joi-validation';
 import { v4 as uuid } from 'uuid';
 
 const app = express();
@@ -11,9 +16,24 @@ app.disable('x-powered-by');
 app.use(express.json());
 
 // In-service memory user collection
-const usersDB = [];
+const usersDB: DBUser[] = [];
 
-// Schemas
+
+/*
+ * Schemas and types
+ */
+
+type User = {
+    id: string,
+    login: string,
+    password: string,
+    age: number,
+}
+
+type DBUser = User & { // intersect types to 'hide' isDeleted from API payload
+    isDeleted: boolean
+}
+
 const idSchema = Joi.object({
     id: Joi.string().guid().required()
 });
@@ -30,14 +50,33 @@ const userSchema = Joi.object({
     age: Joi.number().min(4).max(130).required() // number between 4 and 130
 });
 
+interface UserRequestSchema extends ValidatedRequestSchema {
+    [ContainerTypes.Body]: {
+        login: string,
+        password: string,
+        age: number
+    }
+}
+
 const querySchema = Joi.object({
     filter: Joi.string().required(),
     limit: Joi.number().min(1)
 });
 
+interface QueryRequestSchema extends ValidatedRequestSchema {
+    [ContainerTypes.Query]: {
+        filter: string,
+        limit?: number
+    }
+}
+
+
+/*
+ * Helper methods
+ */
 
 /**
- * helper method to filter soft-deleted users from the 'db'
+ * Filter soft-deleted users from the 'db'
  *
  * @param {String} id the id of the user to be found
  * @return {Number} the index of the user in the DB, or -1
@@ -51,7 +90,7 @@ function findUserIndex(id) {
 }
 
 /**
- * helper method to retrieve (undeleted) users based on a filter
+ * Retrieve (undeleted) users based on a filter
  *
  * Assumes (from task) that limit is applied to the source,
  * not the result after searching
@@ -60,8 +99,8 @@ function findUserIndex(id) {
  * @param {Number} [limit=-1] limiter for search results
  * @return {[User]} list of users founds based on query
  */
-function getAutoSuggestUsers(loginSubstring, limit = -1) {
-    // limit search, ignores 0, negative limits, nulls and NaNs
+function getAutoSuggestUsers(loginSubstring: string, limit: number = -1): User[] {
+
     const searchLimit = (limit > 0) ? limit : usersDB.length;
 
     const users = usersDB
@@ -88,13 +127,18 @@ function getAutoSuggestUsers(loginSubstring, limit = -1) {
     return users;
 }
 
+
+/*
+ * API endpoints
+ */
+
 // Get copy of DB (for debugging/testing)
 app.get('/allusers', (req, res) => {
     res.json(usersDB);
 });
 
 // Query DB based on substring for login
-app.get('/suggestuser', validator.query(querySchema), (req, res) => {
+app.get('/suggestuser', validator.query(querySchema), (req: ValidatedRequest<QueryRequestSchema>, res) => {
     const { limit, filter } = req.query;
     if (filter) {
         return res.status(200).json(getAutoSuggestUsers(filter, limit));
@@ -115,29 +159,36 @@ app.get('/user/:id', validator.params(idSchema), (req, res) => {
 });
 
 // Create user
-app.post('/user', validator.body(userSchema), (req, res) => {
-    const newUser = req.body;
-    newUser.id = uuid();
-    newUser.isDeleted = false;
+app.post('/user', validator.body(userSchema), (req: ValidatedRequest<UserRequestSchema>, res) => {
+    const newUser: DBUser = {
+        id: uuid(),
+        isDeleted: false,
+        ...req.body
+    };
     usersDB.push(newUser);
     res.status(201).json({ id: newUser.id });
 });
 
 // Update user by ID
-app.put('/user/:id', validator.body(userSchema), (req, res) => {
-    const id = req.params.id;
-    const userIndex = findUserIndex(id);
+app.put('/user/:id',
+    validator.params(idSchema),
+    validator.body(userSchema),
+    (req: ValidatedRequest<UserRequestSchema>, res) => {
+        const id = req.params.id;
+        const userIndex = findUserIndex(id);
 
-    if (userIndex >= 0) {
-        const updateUser = req.body;
-        updateUser.id = id;
-        updateUser.isDeleted = false;
-        usersDB[userIndex] = updateUser;
-        res.status(204).send();
-    } else {
-        res.status(404).json({ message: `User '${id}' was not found.` });
-    }
-});
+        if (userIndex >= 0) {
+            const updateUser: DBUser = {
+                id: id,
+                isDeleted: false,
+                ...req.body
+            };
+            usersDB[userIndex] = updateUser;
+            res.status(204).send();
+        } else {
+            res.status(404).json({ message: `User '${id}' was not found.` });
+        }
+    });
 
 // Soft-delete user by ID
 app.delete('/user/:id', validator.params(idSchema), (req, res) => {
@@ -153,7 +204,11 @@ app.delete('/user/:id', validator.params(idSchema), (req, res) => {
     }
 });
 
-// Start app
+
+/*
+ * App init
+ */
+
 app.listen(port, () => {
     console.log(`Server is listening on localhost:${port}`);
 });
