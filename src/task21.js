@@ -124,7 +124,7 @@ app.post('/user', validator.body(userSchema), (req, res) => {
 });
 
 // Update user by ID
-app.put('/user/:id', (req, res) => {
+app.put('/user/:id', validator.body(userSchema), (req, res) => {
     const id = req.params.id;
     const userIndex = findUserIndex(id);
 
@@ -140,7 +140,7 @@ app.put('/user/:id', (req, res) => {
 });
 
 // Soft-delete user by ID
-app.delete('/user/:id', (req, res) => {
+app.delete('/user/:id', validator.params(idSchema), (req, res) => {
     const id = req.params.id;
     const userIndex = findUserIndex(id);
 
