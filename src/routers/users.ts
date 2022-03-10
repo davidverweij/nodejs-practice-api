@@ -9,12 +9,11 @@ import {
 import { StatusCodes } from "http-status-codes";
 import { v4 as uuid } from "uuid";
 
-const app = express();
-const validator = createValidator({});
-const port = 3000;
+const userRoute = express.Router();
 
-app.disable("x-powered-by");
-app.use(express.json());
+export default userRoute;
+
+const validator = createValidator({});
 
 // In-service memory user collectio
 const usersDB: DBUser[] = [];
@@ -142,12 +141,12 @@ const getAutoSuggestUsers = (
  */
 
 // Get copy of DB (for debugging/testing)
-app.get("/allusers", (req, res) => {
+userRoute.get("/all", (req, res) => {
   res.json(usersDB);
 });
 
 // Query DB based on substring for login
-app.get(
+userRoute.get(
   "/suggestuser",
   validator.query(querySchema),
   (req: ValidatedRequest<QueryRequestSchema>, res) => {
@@ -165,7 +164,7 @@ app.get(
 );
 
 // Get user by ID
-app.get("/user/:id", validator.params(idSchema), (req, res) => {
+userRoute.get("/:id", validator.params(idSchema), (req, res) => {
   const { id } = req.params;
   const userIndex = findUserIndex(id);
 
@@ -180,7 +179,7 @@ app.get("/user/:id", validator.params(idSchema), (req, res) => {
 });
 
 // Create user
-app.post(
+userRoute.post(
   "/user",
   validator.body(userSchema),
   (req: ValidatedRequest<UserRequestSchema>, res) => {
@@ -195,32 +194,32 @@ app.post(
 );
 
 // Update user by ID
-app.put(
-  "/user/:id",
+userRoute.put(
+  "/:id",
   validator.params(idSchema),
   validator.body(userSchema),
   (req: ValidatedRequest<UserRequestSchema>, res) => {
     const { id } = req.params;
     const userIndex = findUserIndex(id);
 
-    if (userIndex < 0) {
-      return res
+    if (userIndex >= 0) {
+      const updateUser: DBUser = {
+        id,
+        isDeleted: false,
+        ...req.body,
+      };
+      usersDB[userIndex] = updateUser;
+      res.status(StatusCodes.NO_CONTENT).send();
+    } else {
+      res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: `User '${id}' was not found.` });
     }
-
-    const updateUser: DBUser = {
-      id,
-      isDeleted: false,
-      ...req.body,
-    };
-    usersDB[userIndex] = updateUser;
-    return res.status(StatusCodes.NO_CONTENT).send();
   }
 );
 
 // Soft-delete user by ID
-app.delete("/user/:id", validator.params(idSchema), (req, res) => {
+userRoute.delete("/:id", validator.params(idSchema), (req, res) => {
   const { id } = req.params;
   const userIndex = findUserIndex(id);
 
@@ -233,13 +232,4 @@ app.delete("/user/:id", validator.params(idSchema), (req, res) => {
   // usersDB.splice(userIndex, 1)      // hard-delete option
   usersDB[userIndex].isDeleted = true; // soft-delete
   return res.status(StatusCodes.NO_CONTENT).send();
-});
-
-/*
- * App init
- */
-
-app.listen(port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Server is listening on localhost:${port}`);
 });
