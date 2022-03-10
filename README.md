@@ -9,24 +9,24 @@
 
 ### Task 2.1
 Run `npm run task21`. Servers a CRUD API on [localhost:3000](localhost:3000). Endpoints available:
-- `GET /allusers` to see all users currently in the DB.
+- `GET /allusers` to see all users currently in the DB (including their 'soft-delete' status).
 - `GET /suggestusers?filter=substring&limit=3` to query the DB based on a `substring` for the users' `login` field, and a `limit` (optional) to narrow the search to the first 'x' amount of users in the DB.
-- `GET /user/{id}` to get a user by ID.
+- `GET /user/{id}` to get a user by ID. _ID must be a valid UUID string_.
 - `POST /user` to create a user, returns the new user's `id`. Expected body:
     ```json
     {
-        "login":"string",
-        "password":"string",
-        "age": "string"
+        "login":"string", // should be between 6 and 30 characters (letters, digits or _), without spaces, and must start with a letter
+        "password":"string", // should be between 8 and 30 alphanumeric characters (letters or digits) without punctuation or spaces'
+        "age": "string" // should be a number between 3 and 131
     }
     ```
-- `PUT /user/{id}` to update a user by ID. 
+- `PUT /user/{id}` to update a user by ID. _ID must be a valid UUID string_.
     Expected body:
     ```json
     {
-        "login":"string",
-        "password":"string",
-        "age": "string"
+        "login":"string", // should be between 6 and 30 characters (letters, digits or _), without spaces, and must start with a letter
+        "password":"string", // should be between 8 and 30 alphanumeric characters (letters or digits) without punctuation or spaces'
+        "age": "string" // should be a number between 3 and 131
     }
     ```
-- `DELETE /user/{id}` to (soft) delete a user by ID.
+- `DELETE /user/{id}` to (soft) delete a user by ID. _ID must be a valid UUID string_.
