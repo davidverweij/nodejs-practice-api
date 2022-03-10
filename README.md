@@ -33,3 +33,27 @@ Run `npm run task21`. Servers a CRUD API on [localhost:3000](localhost:3000). En
   }
   ```
 - `DELETE /user/{id}` to (soft) delete a user by ID. _ID must be a valid UUID string_.
+
+### Task 3
+Set up a local PostgreSQL DB, create the following table and insert the dummy data with these commands. The PostgreSQL uses `uuid-ossp` to auto-generate uuid (v4) identifiers for each new user.
+```SQL
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE TABLE users (
+    id uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
+    login VARCHAR (50) NOT NULL,
+    password VARCHAR (50) NOT NULL,
+    age SMALLINT NOT NULL,
+    is_deleted BOOLEAN DEFAULT false
+);
+INSERT INTO users (login, password, age) VALUES
+    ('username_1', 'password_1', 18),
+    ('username_2', 'password_2', 22),
+    ('username_3', 'password_3', 24),
+    ('username_4', 'password_4', 38),
+    ('simple_username_1', 'simple_password_1', 51),
+    ('simple_username_2', 'simple_password_2', 52);
+```
+Confirm insert succeeded with
+```SQL
+SELECT * FROM users;
+```
