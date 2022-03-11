@@ -2,26 +2,7 @@
 import Joi from 'joi';
 import { ContainerTypes, ValidatedRequestSchema } from 'express-joi-validation';
 
-export {
-    User,
-    DBUser,
-    idSchema,
-    userSchema,
-    UserRequestSchema,
-    querySchema,
-    QueryRequestSchema,
-}
-
-type User = {
-    id: string,
-    login: string,
-    password: string,
-    age: number,
-}
-
-type DBUser = User & { // intersect types to 'hide' isDeleted from API payload
-    isDeleted: boolean
-}
+export { idSchema, userSchema, UserRequestSchema, querySchema, QueryRequestSchema }
 
 const idSchema = Joi.object({
     id: Joi.string().guid().required()

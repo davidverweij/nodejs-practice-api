@@ -3,15 +3,7 @@ import express from 'express';
 import { ValidatedRequest, createValidator } from 'express-joi-validation';
 import { v4 as uuid } from 'uuid';
 
-import {
-    User,
-    DBUser,
-    idSchema,
-    userSchema,
-    UserRequestSchema,
-    querySchema,
-    QueryRequestSchema
-} from '../models';
+import { idSchema, userSchema, UserRequestSchema, querySchema, QueryRequestSchema } from '../models';
 import { findUserByID, createUser, updateUser, deleteUser, getAllUsers, getAutoSuggestUsers } from '../data-access';
 
 export const userRoute = express.Router();
@@ -49,9 +41,7 @@ userRoute.post('/', validator.body(userSchema), async (req: ValidatedRequest<Use
 });
 
 // Update user by ID
-userRoute.put('/:id',
-    validator.params(idSchema),
-    validator.body(userSchema),
+userRoute.put('/:id', validator.params(idSchema), validator.body(userSchema),
     async (req: ValidatedRequest<UserRequestSchema>, res) => {
         const { login, password, age } = req.body;
         const success = await updateUser(req.params.id, login, password, age);

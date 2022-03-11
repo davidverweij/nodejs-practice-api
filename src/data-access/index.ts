@@ -1,23 +1,7 @@
 
-import {
-    Sequelize,
-    Op,
-    Model,
-    DataTypes,
-    InferAttributes,
-    InferCreationAttributes,
-    CreationOptional
-} from 'sequelize';
+import { Sequelize, Op, Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
 
-export {
-    findUserByID,
-    createUser,
-    updateUser,
-    deleteUser,
-    getAllUsers,
-    getAutoSuggestUsers,
-    authenticateDatabase
-};
+export { findUserByID, createUser, updateUser, deleteUser, getAllUsers, getAutoSuggestUsers, authenticateDatabase };
 
 const sequelize = new Sequelize('postgres', 'localhost', 'password', {
     host: 'localhost',
