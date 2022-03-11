@@ -1,14 +1,27 @@
 import express from 'express';
 
 import { userRoute } from './routers';
+import { authenticateDatabase } from './data-access';
 
-const app = express();
-const port = 3000;
+async function start(): Promise<void> {
 
-app.disable('x-powered-by');
-app.use(express.json());
-app.use('/user', userRoute);
+    // Prerequisites
+    if (!await authenticateDatabase()) {
+        console.log('Connection with PostgreSQL failed. Please check that your DB is running and have access.');
+        return;
+    }
 
-app.listen(port, () => {
-    console.log(`Server is listening on localhost:${port}`);
-});
+    const app = express();
+    const port = 3000;
+
+    app.disable('x-powered-by');
+    app.use(express.json());
+    app.use('/user', userRoute);
+
+
+    app.listen(port, () => {
+        console.log(`Server is listening on localhost:${port}`);
+    });
+}
+
+start();
