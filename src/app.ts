@@ -1,6 +1,6 @@
 import express from "express";
 
-import userRoute from "./routers";
+import { userRoute } from "./routers";
 import { authenticateDatabase } from "./data-access";
 
 async function start(): Promise<void> {
