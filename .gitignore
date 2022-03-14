@@ -1,3 +1,5 @@
 node_modules
-csv/task12.txt
+misc/csv/task12.txt
 lib/
+dist/
+.DS_Store
