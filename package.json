@@ -6,7 +6,7 @@
   "scripts": {
     "task11": "nodemon --exec babel-node misc/task11.js",
     "task12": "nodemon --exec babel-node misc/task12.js",
-    "dev": "nodemon --exec babel-node src/task21.ts --extensions .ts",
+    "dev": "nodemon --exec babel-node src/app.ts --extensions .ts",
     "eslint": "eslint .",
     "eslint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
@@ -14,7 +14,7 @@
     "lint": "npm run eslint && npm run prettier",
     "lint:fix": "npm run eslint:fix && npm run prettier:fix",
     "build": "tsc",
-    "start": "node dist/task21.js"
+    "start": "node dist/app.js"
   },
   "repository": {
     "type": "git",
