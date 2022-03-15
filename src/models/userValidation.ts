@@ -45,10 +45,24 @@ interface QueryRequestSchema extends ValidatedRequestSchema {
   };
 }
 
+const groupAssignSchema = Joi.object({
+  groupId: Joi.string().guid().required(),
+  userIds: Joi.array().items(Joi.string().guid()).required(),
+});
+
+interface GroupAssignRequestSchema extends ValidatedRequestSchema {
+  [ContainerTypes.Body]: {
+    groupId: string;
+    userIds: string[];
+  };
+}
+
 export {
   idSchema,
   userSchema,
   UserRequestSchema,
   querySchema,
   QueryRequestSchema,
+  groupAssignSchema,
+  GroupAssignRequestSchema,
 };

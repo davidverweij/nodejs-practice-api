@@ -1,8 +1,13 @@
 import express from "express";
 import { createValidator } from "express-joi-validation";
 
-import { idSchema, userSchema, querySchema } from "../models";
-import { UserController } from "../controllers";
+import {
+  idSchema,
+  userSchema,
+  querySchema,
+  groupAssignSchema,
+} from "../models";
+import { UserController, UserGroupController } from "../controllers";
 
 const userRoute = express.Router();
 
@@ -13,6 +18,13 @@ userRoute.get("/all", UserController.all);
 
 // Query DB based on substring for login
 userRoute.get("/suggest", validator.query(querySchema), UserController.suggest);
+
+// Add multiple users to a permissions group
+userRoute.put(
+  "/togroup",
+  validator.body(groupAssignSchema),
+  UserGroupController.addToGroup
+);
 
 // Get user by ID
 userRoute.get("/:id", validator.params(idSchema), UserController.id);

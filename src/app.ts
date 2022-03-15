@@ -1,12 +1,11 @@
 import express from "express";
 
 import { userRoute, groupRoute } from "./routers";
-import setupDatabase from "./data-access";
-import config from "./config";
+import { setupDatabase } from "./data-access";
 
 const start = async (): Promise<void> => {
   // Prerequisites
-  await setupDatabase(config);
+  await setupDatabase();
 
   const app = express();
   const port = 3000;
