@@ -32,10 +32,11 @@ npm run lint:fix     # execute both autoformattes eslint and prettier
 ```shell
 GET    /user/all     # see all users in the SQL DB
 GET    /user/suggest?filter={string}&limit={number} # find all users with `string` in their `login` field, and `limit` (optional) the results
+PUT    /user/togroup # add multiple users to a permissions group
 GET    /user/{id}    # get a user by UUID
-POST   /user        # create a user, returns the UUID
+POST   /user         # create a user, returns the UUID
 PUT    /user/{id}    # update a user by UUID
-DELETE /user/{id} # soft-delete a user by ID
+DELETE /user/{id}    # soft-delete a user by ID
 ```
 
 The `body` of the POST and PUT requests _for users_ should formatted as follows:
@@ -45,6 +46,15 @@ The `body` of the POST and PUT requests _for users_ should formatted as follows:
   "login": "string", // should be between 6 and 30 characters (letters, digits or _), without spaces, and must start with a letter
   "password": "string", // should be between 8 and 30 alphanumeric characters (letters or digits) without punctuation or spaces
   "age": "string" // should be a number between 3 and 131
+}
+```
+
+The `body` of the PUT requests _for adding users to groups_ should formatted as follows:
+
+```js
+{
+  "groupId": "string",
+  "userIds": ["string"]
 }
 ```
 
