@@ -1,26 +1,26 @@
 import { Op } from "sequelize";
 
-import { UserModel } from "../data-access";
+import { User } from "../models";
 
 class UserService {
   /**
    * Gets all the users (Async). Skips 'deleted' users.
    * NOTE: Only used in development
    *
-   * @return {Promise<UserModel[]>} All users
+   * @return {Promise<User[]>} All users
    */
-  static getAll(): Promise<UserModel[]> {
-    return UserModel.findAll({});
+  static getAll(): Promise<User[]> {
+    return User.findAll({});
   }
 
   /**
    * Gets the user by ID (Async). Skips 'deleted' users.
    *
    * @param {string} id
-   * @return {Promise<UserModel|null>} The found User or null if not found
+   * @return {Promise<User|null>} The found User or null if not found
    */
-  static findByID(id: string): Promise<UserModel | null> {
-    return UserModel.findOne({
+  static findByID(id: string): Promise<User | null> {
+    return User.findOne({
       where: {
         id,
         is_deleted: false,
@@ -44,7 +44,7 @@ class UserService {
     password: string,
     age: number
   ): Promise<string> {
-    const user = await UserModel.create({
+    const user = await User.create({
       login,
       password,
       age,
@@ -67,7 +67,7 @@ class UserService {
     password: string,
     age: number
   ): Promise<boolean> {
-    const result = await UserModel.update(
+    const result = await User.update(
       {
         login,
         password,
@@ -91,7 +91,7 @@ class UserService {
    * @return {Promise<boolean>} success indicator
    */
   static async delete(id: string): Promise<boolean> {
-    const result = await UserModel.update(
+    const result = await User.update(
       {
         is_deleted: true,
       },
@@ -113,15 +113,15 @@ class UserService {
    *
    * @param {String} loginSubstring the substring to filter user logins with
    * @param {Number} [limit=-1] limiter for search results
-   * @return {Promise<UserModel[]>} list of users founds based on query
+   * @return {Promise<User[]>} list of users founds based on query
    */
   static async getAutoSuggest(
     loginSubstring: string,
     limit: number = -1
-  ): Promise<UserModel[]> {
+  ): Promise<User[]> {
     const searchLimit = limit > 0 ? limit : undefined;
 
-    const users = await UserModel.findAll({
+    const users = await User.findAll({
       where: {
         login: {
           // case-insensitive substring 'search'

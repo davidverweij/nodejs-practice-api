@@ -1,17 +1,12 @@
 import express from "express";
 
 import { userRoute } from "./routers";
-import { authenticateDatabase } from "./data-access";
+import setupDatabase from "./data-access";
+import config from "./config";
 
-async function start(): Promise<void> {
+const start = async (): Promise<void> => {
   // Prerequisites
-  if (!(await authenticateDatabase())) {
-    // eslint-disable-next-line no-console
-    console.log(
-      "Connection with PostgreSQL failed. Please check that your DB is running and have access."
-    );
-    return;
-  }
+  await setupDatabase(config);
 
   const app = express();
   const port = 3000;
@@ -24,6 +19,6 @@ async function start(): Promise<void> {
     // eslint-disable-next-line no-console
     console.log(`Server is listening on localhost:${port}`);
   });
-}
+};
 
 start();

@@ -38,36 +38,6 @@ Run `npm run task21`. Servers a CRUD API on [localhost:3000](localhost:3000). En
 
 #### Setup
 
-1. Set up a local PostgreSQL DB called `postgres`,
-1. Create a user called `localhost` with password `password`,
-1. Grant all privileges for accessing the DB, e.g.
-
-```SQL
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO localhost;
-```
-
-1. Create the following table and insert the dummy data with the commands below. The PostgreSQL uses `uuid-ossp` to auto-generate uuid (v4) identifiers for each new user:
-
-```SQL
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE TABLE users (
-    id uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
-    login VARCHAR NOT NULL,
-    password VARCHAR NOT NULL,
-    age SMALLINT NOT NULL,
-    is_deleted BOOLEAN DEFAULT false
-);
-INSERT INTO users (login, password, age) VALUES
-    ('username_1', 'password_1', 18),
-    ('username_2', 'password_2', 22),
-    ('username_3', 'password_3', 24),
-    ('username_4', 'password_4', 38),
-    ('simple_username_1', 'simple_password_1', 51),
-    ('simple_username_2', 'simple_password_2', 52);
-```
-
-Confirm insert succeeded with
-
-```SQL
-SELECT * FROM users;
-```
+1. Copy the `.env.example` and rename it to `.env`,
+1. Set up a local PostgreSQL DB, following the queries in [src/config/setup.sql](src/config/setup.sql),
+1. Run the app with `npm run dev`.
