@@ -3,3 +3,4 @@ misc/csv/task12.txt
 lib/
 dist/
 .DS_Store
+.env

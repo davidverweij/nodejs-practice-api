@@ -2,11 +2,11 @@
   "name": "epam_nodejs_mentoring",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/app.ts",
   "scripts": {
     "task11": "nodemon --exec babel-node misc/task11.js",
     "task12": "nodemon --exec babel-node misc/task12.js",
-    "dev": "nodemon --exec babel-node src/task21.ts --extensions .ts",
+    "dev": "nodemon --exec babel-node src/app.ts --extensions .ts",
     "eslint": "eslint .",
     "eslint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
@@ -14,7 +14,7 @@
     "lint": "npm run eslint && npm run prettier",
     "lint:fix": "npm run eslint:fix && npm run prettier:fix",
     "build": "tsc",
-    "start": "node dist/task21.js"
+    "start": "node dist/app.js"
   },
   "repository": {
     "type": "git",
@@ -52,10 +52,13 @@
     "@types/joi": "^17.2.3",
     "@types/uuid": "^8.3.4",
     "csvtojson": "^2.0.10",
+    "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "express-joi-validation": "^5.0.1",
     "http-status-codes": "^2.2.0",
     "joi": "^17.6.0",
+    "pg": "^8.7.3",
+    "sequelize": "^6.17.0",
     "uuid": "^8.3.2"
   }
 }
