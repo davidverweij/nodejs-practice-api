@@ -43,3 +43,11 @@ CREATE TABLE groups (
 INSERT INTO groups (name, permissions) VALUES
     ('admin', ARRAY['READ', 'WRITE', 'DELETE', 'SHARE', 'UPLOAD_FILES']::permission[]),
     ('reader', ARRAY['READ', 'SHARE']::permission[]);
+
+-- create junction table for user-group relations (many2many)
+
+CREATE TABLE usergroup (
+  user_id uuid REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE,
+  group_id uuid REFERENCES groups (id) ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT usergroup_id PRIMARY KEY (user_id, group_id)  -- explicit pk
+);
