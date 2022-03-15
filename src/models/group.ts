@@ -3,23 +3,28 @@ import {
   InferAttributes,
   InferCreationAttributes,
   CreationOptional,
-  DataTypes,
   Sequelize,
+  DataTypes,
 } from "sequelize";
 
-class User extends Model<
-  InferAttributes<User>,
-  InferCreationAttributes<User, { omit: "is_deleted" }>
+// type GroupPermissions = 'READ' | 'WRITE' | 'DELETE' | 'SHARE' | 'UPLOAD_FILES'
+enum GroupPermissions {
+  READ = "READ",
+  WRITE = "WRITE",
+  DELETE = "DELETE",
+  SHARE = "SHARE",
+  UPLOAD_FILES = "UPLOAD_FILES",
+}
+
+class Group extends Model<
+  InferAttributes<Group>,
+  InferCreationAttributes<Group>
 > {
   declare id: CreationOptional<string>;
 
-  declare login: string;
+  declare name: string;
 
-  declare password: string;
-
-  declare age: number;
-
-  declare is_deleted: boolean;
+  declare permissions: Array<GroupPermissions>;
 
   /**
    * Initializes the ORM with the imported User Model
@@ -27,38 +32,31 @@ class User extends Model<
    * @param {Sequelize} sequelize
    */
   static initModel = (sequelize: Sequelize) => {
-    User.init(
+    Group.init(
       {
         id: {
           type: DataTypes.UUID,
           primaryKey: true,
           autoIncrement: true,
         },
-        login: {
+        name: {
           type: DataTypes.STRING,
           allowNull: false,
         },
-        password: {
-          type: DataTypes.STRING,
+        permissions: {
+          type: DataTypes.ARRAY(
+            DataTypes.ENUM({ values: Object.values(GroupPermissions) })
+          ),
           allowNull: false,
-        },
-        age: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-        },
-        is_deleted: {
-          type: DataTypes.BOOLEAN,
-          allowNull: true,
-          defaultValue: false,
         },
       },
       {
         sequelize,
         timestamps: false,
-        tableName: "users",
+        tableName: "groups",
       }
     );
   };
 }
 
-export default User;
+export { GroupPermissions, Group };

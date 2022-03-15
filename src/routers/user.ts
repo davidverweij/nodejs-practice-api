@@ -6,8 +6,6 @@ import { UserController } from "../controllers";
 
 const userRoute = express.Router();
 
-export default userRoute;
-
 const validator = createValidator({});
 
 // Get copy of DB (for debugging/testing)
@@ -32,3 +30,5 @@ userRoute.put(
 
 // Soft-delete user by ID
 userRoute.delete("/:id", validator.params(idSchema), UserController.delete);
+
+export default userRoute;

@@ -4,7 +4,7 @@
 
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO localhost;
 
--- insert dummy data
+-- create users table
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE users (
@@ -14,6 +14,9 @@ CREATE TABLE users (
     age SMALLINT NOT NULL,
     is_deleted BOOLEAN DEFAULT false
 );
+
+-- insert dummy data for users
+
 INSERT INTO users (login, password, age) VALUES
     ('username_1', 'password_1', 18),
     ('username_2', 'password_2', 22),
@@ -25,3 +28,18 @@ INSERT INTO users (login, password, age) VALUES
 -- Confirm insert succeeded with
 
 SELECT * FROM users;
+
+-- create groups table
+
+CREATE TYPE permission AS ENUM ('READ','WRITE','DELETE','SHARE','UPLOAD_FILES');
+CREATE TABLE groups (
+    id uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    permissions permission ARRAY NOT NULL
+);
+
+-- insert dummy data for groups
+
+INSERT INTO groups (name, permissions) VALUES
+    ('admin', ARRAY['READ', 'WRITE', 'DELETE', 'SHARE', 'UPLOAD_FILES']::permission[]),
+    ('reader', ARRAY['READ', 'SHARE']::permission[]);

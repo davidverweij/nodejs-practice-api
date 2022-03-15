@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import { DatabaseConfig, User } from "../models";
+import { DatabaseConfig, Group, User } from "../models";
 
 /**
  * Opens a connection with PostgreSQL, failes if authentication fails.
@@ -23,7 +23,8 @@ const setupDatabase = async ({
     // authenticate
     await sequelize.authenticate();
     // initialise ORM
-    User.initUserModel(sequelize);
+    User.initModel(sequelize);
+    Group.initModel(sequelize);
   } catch (error) {
     throw new Error("Database connection failed.");
   }
