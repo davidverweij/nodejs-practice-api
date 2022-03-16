@@ -1,8 +1,15 @@
 import express from "express";
 
-import { userRoute, groupRoute } from "./routers";
+// wraps express routers to auto-catch async errors
+import "express-async-errors";
+
+import { userRoute, groupRoute, notFoundRoute, errorRoute } from "./routers";
 import { setupDatabase } from "./data-access";
-import { loggingMiddleware } from "./config";
+import {
+  loggerMiddleware,
+  errorLoggerMiddleware,
+  errorHandler,
+} from "./config";
 
 const start = async (): Promise<void> => {
   // Prerequisites
@@ -12,10 +19,27 @@ const start = async (): Promise<void> => {
   const port = 3000;
 
   app.disable("x-powered-by");
-  app.use(loggingMiddleware);
+
+  // before middleware
+  app.use(loggerMiddleware);
   app.use(express.json());
+
+  // routes
   app.use("/user", userRoute);
   app.use("/group", groupRoute);
+
+  // NOTE: For testing, will be moved to testing setup
+  app.use("/error", errorRoute);
+
+  // catch non-existing routes
+  app.use(notFoundRoute);
+
+  // after middleware
+  app.use(errorLoggerMiddleware);
+
+  // custom error handler
+  // after middleware
+  app.use(errorHandler);
 
   app.listen(port, () => {
     // eslint-disable-next-line no-console

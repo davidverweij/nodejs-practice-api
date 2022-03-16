@@ -35,4 +35,4 @@ const database: DatabaseConfig = {
 };
 
 export { database };
-export { default as loggingMiddleware } from "./logger";
+export * from "./logger";
