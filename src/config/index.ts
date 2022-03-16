@@ -11,6 +11,7 @@ const envValidator = Joi.object()
     DB_PASS: Joi.string().required(),
     DB_HOST: Joi.string().required(),
     DB_PORT: Joi.string().required(),
+    DB_LOGS: Joi.boolean().required(),
   })
   .unknown(); // ignore other ENVs
 
@@ -30,6 +31,8 @@ const database: DatabaseConfig = {
   password: envVars.DB_PASS,
   host: envVars.DB_HOST,
   port: parseInt(envVars.DB_PORT, 10),
+  logging: envVars.DB_LOGGING,
 };
 
-export default database;
+export { database };
+export { default as loggingMiddleware } from "./logger";
