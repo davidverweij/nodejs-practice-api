@@ -1,4 +1,6 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import { BaseError } from "../errors";
 
 const errorRoute = express.Router();
 
@@ -15,6 +17,23 @@ errorRoute.get("/reject2", () =>
 
 errorRoute.get("/reject3", async () =>
   Promise.reject(new Error("Reject with Error"))
+);
+
+errorRoute.get(
+  "/timeout",
+  (_req: Request, res: Response, next: NextFunction) => {
+    res.setTimeout(2000, () => {
+      next(
+        new BaseError(
+          "TimeoutError",
+          StatusCodes.REQUEST_TIMEOUT,
+          "Response timed out"
+        )
+      );
+    });
+    // wait forever..
+    return new Promise(() => {});
+  }
 );
 
 export default errorRoute;

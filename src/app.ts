@@ -5,11 +5,8 @@ import "express-async-errors";
 
 import { userRoute, groupRoute, notFoundRoute, errorRoute } from "./routers";
 import { setupDatabase } from "./data-access";
-import {
-  loggerMiddleware,
-  errorLoggerMiddleware,
-  errorHandler,
-} from "./config";
+import { loggerMiddleware, errorLoggerMiddleware } from "./config";
+import { errorHandler } from "./errors";
 
 const start = async (): Promise<void> => {
   // Prerequisites

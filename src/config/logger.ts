@@ -1,7 +1,6 @@
 import winston from "winston";
 import expressWinston from "express-winston";
-import { NextFunction, Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
+import { Request, Response } from "express";
 
 const logMessage = (req: Request, res: Response) =>
   `${res.statusCode} ${req.method} ${req.url}`;
@@ -64,40 +63,4 @@ const errorLoggerMiddleware = expressWinston.errorLogger({
   winstonInstance: errorLogger,
 });
 
-/**
- * Catch any unhandled errors
- *
- * @param {Error} err
- * @param {Request} req
- * @param {Response} res
- */
-const errorHandler = (
-  err: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
-  // don't respond if error occured after response had been sent
-  if (res.headersSent) {
-    next(err);
-    return;
-  }
-  res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-  res.json({ error: err.message });
-};
-
-process.on("uncaughtException", (error) => {
-  errorLogger.error(`${error.name} : ${error.message} : ${error.stack}`);
-  process.exit(1);
-});
-
-process.on("unhandledRejection", (error) => {
-  const message =
-    error instanceof Error
-      ? `${error.name} : ${error.message} : ${error.stack}`
-      : `Unhandled Promise Reject : ${error}`;
-  errorLogger.error(message);
-  process.exit(1);
-});
-
-export { loggerMiddleware, errorLoggerMiddleware, errorHandler };
+export { loggerMiddleware, errorLoggerMiddleware, errorLogger };

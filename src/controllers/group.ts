@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ValidatedRequest } from "express-joi-validation";
 import { StatusCodes } from "http-status-codes";
+import { NotFoundError } from "../errors";
 import { GroupRequestSchema } from "../models/groupValidation";
 import { GroupService } from "../services";
 
@@ -11,13 +12,11 @@ class GroupController {
   };
 
   static id = async (req: Request, res: Response) => {
-    const user = await GroupService.findByID(req.params.id);
-    if (!user) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: `Group '${req.params.id}' was not found.` });
+    const group = await GroupService.findByID(req.params.id);
+    if (!group) {
+      throw new NotFoundError(`Group '${req.params.id}' was not found.`);
     }
-    return res.status(StatusCodes.OK).json(user);
+    return res.status(StatusCodes.OK).json(group);
   };
 
   static create = async (
@@ -25,8 +24,8 @@ class GroupController {
     res: Response
   ) => {
     const { name, permissions } = req.body;
-    const userId = await GroupService.create(name, permissions);
-    return res.status(StatusCodes.CREATED).json({ id: userId });
+    const groupId = await GroupService.create(name, permissions);
+    return res.status(StatusCodes.CREATED).json({ id: groupId });
   };
 
   static update = async (
@@ -36,9 +35,7 @@ class GroupController {
     const { name, permissions } = req.body;
     const success = await GroupService.update(req.params.id, name, permissions);
     if (!success) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: `Group '${req.params.id}' was not found.` });
+      throw new NotFoundError(`Group '${req.params.id}' was not found.`);
     }
     return res.status(StatusCodes.NO_CONTENT).send();
   };
@@ -46,9 +43,7 @@ class GroupController {
   static delete = async (req: Request, res: Response) => {
     const success = await GroupService.delete(req.params.id);
     if (!success) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: `Group '${req.params.id}' was not found.` });
+      throw new NotFoundError(`Group '${req.params.id}' was not found.`);
     }
     return res.status(StatusCodes.NO_CONTENT).send();
   };
