@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { BaseError } from ".";
+import BaseError from "./base";
 
 class NotFoundError extends BaseError {
   constructor(message: string) {

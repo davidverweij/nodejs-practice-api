@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { errorLogger } from "../config";
+import { sequelize } from "../data-access";
 import BaseError from "./base";
 
 const errorHandler = (
@@ -27,8 +28,12 @@ process.on("unhandledRejection", (error: Error) => {
 });
 
 // Catch uncaught exceptions (might be Programming OR Operational error)
-process.on("uncaughtException", (error: Error) => {
+process.on("uncaughtException", async (error: Error) => {
+  // report
   errorLogger.error("uncaughtException", error);
+  // close instances/connections
+  await sequelize.close();
+  // exit 'gracefully'
   process.exit(1);
 });
 
