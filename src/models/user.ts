@@ -16,7 +16,7 @@ import {
   HasManyCountAssociationsMixin,
 } from "sequelize";
 
-import { Group } from ".";
+import { Group } from "./group";
 
 class User extends Model<
   InferAttributes<User>,

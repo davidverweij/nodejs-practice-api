@@ -6,7 +6,7 @@ import {
   userSchema,
   querySchema,
   groupAssignSchema,
-} from "../models";
+} from "../models/userValidation";
 import { UserController, UserGroupController } from "../controllers";
 
 const userRoute = express.Router();

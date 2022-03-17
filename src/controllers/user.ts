@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import { ValidatedRequest } from "express-joi-validation";
 import { StatusCodes } from "http-status-codes";
-import { QueryRequestSchema, UserRequestSchema } from "../models";
+import {
+  QueryRequestSchema,
+  UserRequestSchema,
+} from "../models/userValidation";
 import { UserService } from "../services";
 
 class UserController {

@@ -1,5 +1,6 @@
 import { Transaction } from "sequelize";
-import { Group, User } from "../models";
+import User from "../models/user";
+import { Group } from "../models/group";
 import { sequelize } from "../data-access";
 import { NotFoundError } from "../errors";
 

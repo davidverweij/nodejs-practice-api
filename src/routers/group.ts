@@ -1,7 +1,8 @@
 import express from "express";
 import { createValidator } from "express-joi-validation";
 
-import { idSchema, groupSchema } from "../models";
+import { idSchema } from "../models/userValidation";
+import { groupSchema } from "../models/groupValidation";
 import { GroupController } from "../controllers";
 
 const groupRoute = express.Router();

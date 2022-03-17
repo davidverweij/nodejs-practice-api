@@ -1,5 +1,7 @@
 import { Sequelize } from "sequelize";
-import { Group, User, UserGroup } from "../models";
+import { Group } from "../models/group";
+import User from "../models/user";
+import UserGroup from "../models/userGroup";
 import config from "../config";
 
 // create db object

@@ -1,4 +1,4 @@
-import { Group, GroupPermissions } from "../models";
+import { Group, GroupPermissions } from "../models/group";
 
 class GroupService {
   /**

@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { ValidatedRequest } from "express-joi-validation";
 import { StatusCodes } from "http-status-codes";
-import { GroupAssignRequestSchema } from "../models";
+import { GroupAssignRequestSchema } from "../models/userValidation";
 import { UserGroupService } from "../services";
 import { NotFoundError } from "../errors";
 
