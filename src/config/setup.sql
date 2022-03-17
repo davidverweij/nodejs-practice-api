@@ -51,3 +51,17 @@ CREATE TABLE usergroup (
   group_id uuid REFERENCES groups (id) ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT usergroup_id PRIMARY KEY (user_id, group_id)  -- explicit pk
 );
+
+-- create api-users (for authentication)
+
+CREATE TABLE apiusers (
+    id uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
+    login VARCHAR NOT NULL,
+    password VARCHAR NOT NULL
+);
+
+-- insert dummy data for apiusers
+
+INSERT INTO apiusers (login, password) VALUES
+    ('apiuser_1', '$2b$10$OcJkmW6SXDKciJIxtp4cX.CtVloOTmQ6DCISxmTCfgI.qzDqDB6sq');
+    -- password is '1234' hashed

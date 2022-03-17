@@ -2,6 +2,7 @@ import { Sequelize } from "sequelize";
 import { Group } from "../models/group";
 import User from "../models/user";
 import UserGroup from "../models/userGroup";
+import ApiUser from "../models/apiUser";
 import { database } from "../config";
 
 // create db object
@@ -30,6 +31,8 @@ const setupDatabase = async (): Promise<void> => {
     User.initModel(sequelize);
     Group.initModel(sequelize);
     UserGroup.initModel(sequelize);
+    ApiUser.initModel(sequelize);
+
     User.belongsToMany(Group, {
       through: UserGroup,
       foreignKey: "user_id",

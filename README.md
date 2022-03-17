@@ -92,3 +92,16 @@ You can test this by:
 - call `GET \error\reject2`
 - call `GET \error\reject3`
 - call `GET \error\timeout`
+
+#### Authentication
+
+A separate SQL table stores registered API users (no functionality yet to sign up - but one pre-defined user is provided through [src/config/setup.sql](src/config/setup.sql)). All `GET /user` endpoints are protected through JWT authentication, the others are publically available. To access `GET /user/` please:
+
+1. Retrieve a JWT token by performing: `POST /login` with this json payload:
+   ```json
+   {
+     "username": "apiuser_1",
+     "password": "1234"
+   }
+   ```
+1. Add the retrieved JWT token (**expires in 60 seconds**) as a `x-access-token` to the usual requests.
