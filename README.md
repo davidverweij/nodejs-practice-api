@@ -74,6 +74,21 @@ The `body` of the POST and PUT requests _for groups_ should formatted as follows
 {
   "name": "string",
   "persmissons": ["string"]
-  // can be on or multiple of READ | WRITE | DELETE | SHARE | UPLOAD_FILES
+  // can be one or multiple of READ | WRITE | DELETE | SHARE | UPLOAD_FILES
 }
 ```
+
+#### Error handling
+
+`Winston` is used to log to `logs/info.log` and errors are seperately logged to `logs/error.log`. The [`express-async-errors`](https://www.npmjs.com/package/express-async-errors) packages wraps all routes such that `unhandledRejections` are caught (similar to `try`/`catch`) and passed to `next()`. **This functionality will be integrated into Express.js 5 - deprecating this package when updating to 5.** This allows our custom error handler middleware to handle this rejection.
+
+You can test this by:
+
+> A test suite will be implemented in a later task. These are for 'debugging' purposes at this stage.
+
+- shutting down your PostgreSQL mid-program, and query an endpoint
+- call `GET \error\throw`
+- call `GET \error\reject1`
+- call `GET \error\reject2`
+- call `GET \error\reject3`
+- call `GET \error\timeout`
