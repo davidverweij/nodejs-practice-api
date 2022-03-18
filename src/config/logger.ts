@@ -64,7 +64,9 @@ const timingMiddlewareBefore = (
 };
 
 const timingMiddlewareAfter = (req: Request) => {
-  const queryDuration = new Date().getTime() - req.queryStart;
+  const queryDuration = req.queryStart
+    ? new Date().getTime() - req.queryStart
+    : "unknown";
   return { duration: queryDuration };
 };
 
