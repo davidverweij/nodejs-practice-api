@@ -5,7 +5,11 @@ import "express-async-errors";
 
 import { userRoute, groupRoute, notFoundRoute, errorRoute } from "./routers";
 import { setupDatabase } from "./data-access";
-import { loggerMiddleware, errorLoggerMiddleware } from "./config";
+import {
+  loggerMiddleware,
+  errorLoggerMiddleware,
+  timingMiddlewareBefore,
+} from "./config/logger";
 import { errorHandler } from "./errors";
 
 const start = async (): Promise<void> => {
@@ -18,6 +22,7 @@ const start = async (): Promise<void> => {
   app.disable("x-powered-by");
 
   // before middleware
+  app.use(timingMiddlewareBefore); // start time measurement - will be printed in logs
   app.use(loggerMiddleware);
   app.use(express.json());
 
@@ -42,6 +47,7 @@ const start = async (): Promise<void> => {
     // eslint-disable-next-line no-console
     console.log(`Server is listening on localhost:${port}`);
   });
+  // app.use(timingMiddleware); // finish time measurement and log
 };
 
 start();

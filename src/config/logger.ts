@@ -1,6 +1,6 @@
 import winston from "winston";
 import expressWinston from "express-winston";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
 const logMessage = (req: Request, res: Response) =>
   `${res.statusCode} ${req.method} ${req.url}`;
@@ -16,7 +16,8 @@ const logger = winston.createLogger({
           format: "YY-MM-DD HH:MM:SS",
         }),
         winston.format.printf(
-          (info) => `${info.timestamp}  ${info.level} : ${info.message}`
+          (info) =>
+            `${info.timestamp}  ${info.level} : ${info.message} in ${info.meta.duration} ms`
         )
       ),
     }),
@@ -53,14 +54,34 @@ const errorLogger = winston.createLogger({
   ],
 });
 
+const timingMiddlewareBefore = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  req.queryStart = new Date().getTime();
+  next();
+};
+
+const timingMiddlewareAfter = (req: Request) => {
+  const queryDuration = new Date().getTime() - req.queryStart;
+  return { duration: queryDuration };
+};
+
 const loggerMiddleware = expressWinston.logger({
   winstonInstance: logger,
   // override default express logger message
   msg: logMessage,
+  dynamicMeta: timingMiddlewareAfter,
 });
 
 const errorLoggerMiddleware = expressWinston.errorLogger({
   winstonInstance: errorLogger,
 });
 
-export { loggerMiddleware, errorLoggerMiddleware, errorLogger };
+export {
+  loggerMiddleware,
+  errorLoggerMiddleware,
+  errorLogger,
+  timingMiddlewareBefore,
+};
