@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 
 // wraps express routers to auto-catch async errors
 import "express-async-errors";
@@ -27,6 +28,13 @@ const start = async (): Promise<void> => {
   const port = 3000;
 
   app.disable("x-powered-by");
+  app.use(
+    // auto-enables CORS, and pre-flight
+    cors({
+      origin: "https://www.test-cors.org",
+      optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+    })
+  );
 
   // before middleware
   app.use(timingMiddlewareBefore); // start time measurement - will be printed in logs
