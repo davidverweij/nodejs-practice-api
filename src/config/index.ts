@@ -1,7 +1,7 @@
 import "dotenv/config";
 import Joi from "joi";
 
-import { DatabaseConfig } from "../models";
+import DatabaseConfig from "../models/config";
 
 // validate ENV setup
 const envValidator = Joi.object()

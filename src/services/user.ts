@@ -1,6 +1,6 @@
 import { Op } from "sequelize";
 
-import { User } from "../models";
+import User from "../models/user";
 
 class UserService {
   /**

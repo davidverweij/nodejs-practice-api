@@ -1,12 +1,11 @@
 import express from "express";
 
-import { userRoute } from "./routers";
-import setupDatabase from "./data-access";
-import config from "./config";
+import { userRoute, groupRoute } from "./routers";
+import { setupDatabase } from "./data-access";
 
 const start = async (): Promise<void> => {
   // Prerequisites
-  await setupDatabase(config);
+  await setupDatabase();
 
   const app = express();
   const port = 3000;
@@ -14,6 +13,7 @@ const start = async (): Promise<void> => {
   app.disable("x-powered-by");
   app.use(express.json());
   app.use("/user", userRoute);
+  app.use("/group", groupRoute);
 
   app.listen(port, () => {
     // eslint-disable-next-line no-console

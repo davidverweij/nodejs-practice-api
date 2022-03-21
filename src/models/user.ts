@@ -5,7 +5,18 @@ import {
   CreationOptional,
   DataTypes,
   Sequelize,
+  HasManyGetAssociationsMixin,
+  HasManyAddAssociationMixin,
+  HasManyAddAssociationsMixin,
+  HasManySetAssociationsMixin,
+  HasManyRemoveAssociationMixin,
+  HasManyRemoveAssociationsMixin,
+  HasManyHasAssociationMixin,
+  HasManyHasAssociationsMixin,
+  HasManyCountAssociationsMixin,
 } from "sequelize";
+
+import { Group } from "./group";
 
 class User extends Model<
   InferAttributes<User>,
@@ -21,12 +32,33 @@ class User extends Model<
 
   declare is_deleted: boolean;
 
+  // Since TS cannot determine model association at compile time
+  // we have to declare them here purely virtually
+  // these will not exist until `User.init` was called.
+  declare getGroups: HasManyGetAssociationsMixin<Group>;
+
+  declare addGroup: HasManyAddAssociationMixin<Group, number>;
+
+  declare addGroups: HasManyAddAssociationsMixin<Group, number>;
+
+  declare setGroups: HasManySetAssociationsMixin<Group, number>;
+
+  declare removeGroup: HasManyRemoveAssociationMixin<Group, number>;
+
+  declare removeGroups: HasManyRemoveAssociationsMixin<Group, number>;
+
+  declare hasGroup: HasManyHasAssociationMixin<Group, number>;
+
+  declare hasGroups: HasManyHasAssociationsMixin<Group, number>;
+
+  declare countGroups: HasManyCountAssociationsMixin;
+
   /**
    * Initializes the ORM with the imported User Model
    *
    * @param {Sequelize} sequelize
    */
-  static initUserModel = (sequelize: Sequelize) => {
+  static initModel = (sequelize: Sequelize) => {
     User.init(
       {
         id: {
