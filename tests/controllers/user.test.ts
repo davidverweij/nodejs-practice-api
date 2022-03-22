@@ -9,7 +9,7 @@ import mockFunction from "../jestHelpers";
 jest.mock("../../src/services");
 
 describe("UserController.all", () => {
-  describe("should return an undefined list of users", () => {
+  describe("should return an unmodified list of users", () => {
     it("when there are users in the DB", async () => {
       // Create casted User object
       const users = [
