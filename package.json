@@ -15,7 +15,7 @@
     "lint:fix": "npm run eslint:fix && npm run prettier:fix",
     "build": "tsc",
     "start": "node dist/app.js",
-    "test": "jest --verbose"
+    "test": "jest --verbose --coverage"
   },
   "repository": {
     "type": "git",
