@@ -2,14 +2,15 @@ import { Sequelize } from "sequelize";
 import { initModels } from "../../src/data-access";
 import User from "../../src/models/user";
 import { UserService } from "../../src/services";
-// import mockFunction from "../jestHelpers";
 
 describe("UserService", () => {
   let mockSequelize: Sequelize;
-  const sampleUserAtt = { login: "login1", password: "pass1", age: 1 };
-  const deletedSampleUserAtt = { ...sampleUserAtt, is_deleted: true };
-  let sampleUser: User;
-  let deletedSampleUser: User;
+  const sampleUserAtt = {
+    id: "769ee62d-7ea6-473f-a289-0547f82fd5e7",
+    login: "login1",
+    password: "pass1",
+    age: 1,
+  };
 
   beforeAll(async () => {
     // fresh (embedded) DB. Note that we do NOT use PostgreSQL
@@ -23,27 +24,17 @@ describe("UserService", () => {
       logging: false,
     });
     initModels(mockSequelize);
-    await mockSequelize.sync({ force: true });
-  });
-
-  beforeEach(async () => {
-    // inject sample user
-    sampleUser = await User.create(sampleUserAtt);
-    deletedSampleUser = await User.create(deletedSampleUserAtt);
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await mockSequelize.truncate({ cascade: true }); // clear all inserted models
-  });
-
-  afterAll(async () => {
-    await mockSequelize.close();
   });
 
   describe("create", () => {
-    it("should return a valid UUID upon creation", async () => {
-      const spy = jest.spyOn(User, "create");
+    it("should return an UUID upon creation", async () => {
+      const spy = jest
+        .spyOn(User, "create")
+        .mockImplementation(() => new User(sampleUserAtt));
 
       const result = await UserService.create("login", "pass", 1);
 
@@ -57,26 +48,27 @@ describe("UserService", () => {
   describe("update", () => {
     const userAfter = { login: "login2", password: "pass2", age: 2 };
 
-    it("should update one row in the table", async () => {
-      const spy = jest.spyOn(User, "update");
+    it("should return true when successful update", async () => {
+      const spy = jest
+        .spyOn(User, "update")
+        .mockImplementation(() => Promise.resolve([1]));
 
       const status = await UserService.update(
-        sampleUser.id,
+        sampleUserAtt.id,
         userAfter.login,
         userAfter.password,
         userAfter.age
       );
-      const result = (await User.findByPk(sampleUser.id)) as User;
 
       expect(spy).toBeCalled();
       expect(status).toBe(true);
-      expect(result).toBeInstanceOf(User);
-      expect(result.login).toEqual(userAfter.login);
     });
 
-    it("should not update if user is not found", async () => {
+    it("should return false if user does not exists", async () => {
       const wrongUuid = "94f88e92-ea29-4e30-8e7c-1cee928577c8";
-      const spy = jest.spyOn(User, "update");
+      const spy = jest
+        .spyOn(User, "update")
+        .mockImplementation(() => Promise.resolve([0]));
 
       const status = await UserService.update(
         wrongUuid,
@@ -84,40 +76,49 @@ describe("UserService", () => {
         userAfter.password,
         userAfter.age
       );
-      const result = await User.findByPk(wrongUuid);
 
       expect(spy).toBeCalled();
       expect(status).toBe(false);
-      expect(result).toBe(null);
     });
 
-    it("should not update if user is soft-deleted", async () => {
-      const spy = jest.spyOn(User, "update");
+    it("should not act if user is already soft deleted", async () => {
+      const spyUpdate = jest
+        .spyOn(User, "update")
+        .mockImplementation(() => Promise.resolve([0]));
 
       const status = await UserService.update(
-        deletedSampleUser.id,
+        sampleUserAtt.id,
         userAfter.login,
         userAfter.password,
         userAfter.age
       );
-      const result = (await User.findByPk(deletedSampleUser.id)) as User;
 
-      expect(spy).toBeCalled(); // User.update() is still called, but should not have an effect
+      expect(spyUpdate).toBeCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          where: expect.objectContaining({
+            is_deleted: false,
+          }),
+        })
+      );
       expect(status).toBe(false);
-      expect(result.login).not.toBe(userAfter.login);
     });
   });
 
   describe("autosuggest", () => {
     it("should default to NO limit", async () => {
-      const spy = jest.spyOn(User, "findAll");
+      const spy = jest
+        .spyOn(User, "findAll")
+        .mockImplementation(async () => [new User(sampleUserAtt)]);
 
       await UserService.getAutoSuggest("test");
 
       expect(spy).toBeCalledWith(expect.objectContaining({ limit: undefined }));
     });
     it("should pass-through any positive limit", async () => {
-      const spy = jest.spyOn(User, "findAll");
+      const spy = jest
+        .spyOn(User, "findAll")
+        .mockImplementation(async () => [new User(sampleUserAtt)]);
       const expected = 77;
 
       await UserService.getAutoSuggest("test", expected);
@@ -125,34 +126,61 @@ describe("UserService", () => {
       expect(spy).toBeCalledWith(expect.objectContaining({ limit: expected }));
     });
     it("should ignore negative limits", async () => {
-      const spy = jest.spyOn(User, "findAll");
+      const spy = jest
+        .spyOn(User, "findAll")
+        .mockImplementation(async () => [new User(sampleUserAtt)]);
 
       await UserService.getAutoSuggest("test", -23);
 
       expect(spy).toBeCalledWith(expect.objectContaining({ limit: undefined }));
     });
+
+    it("should ignore users that are soft deleted", async () => {
+      const spy = jest
+        .spyOn(User, "findAll")
+        .mockImplementation(async () => []);
+
+      await UserService.getAutoSuggest("test");
+
+      expect(spy).toBeCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            is_deleted: false,
+          }),
+        })
+      );
+    });
   });
 
   describe("delete", () => {
     it("should SOFT delete a user", async () => {
-      const spyUpdate = jest.spyOn(User, "update");
+      const spyUpdate = jest
+        .spyOn(User, "update")
+        .mockImplementation(() => Promise.resolve([1]));
       const spyDelete = jest.spyOn(User, "destroy");
 
-      const status = await UserService.delete(sampleUser.id);
-      const user = (await User.findByPk(sampleUser.id)) as User;
+      const status = await UserService.delete(sampleUserAtt.id);
 
       expect(spyUpdate).toBeCalled();
       expect(spyDelete).not.toBeCalled();
       expect(status).toBe(true);
-      expect(user.is_deleted).toEqual(true);
     });
 
     it("should not act if user is already soft deleted", async () => {
-      const spyUpdate = jest.spyOn(User, "update");
+      const spyUpdate = jest
+        .spyOn(User, "update")
+        .mockImplementation(() => Promise.resolve([0]));
 
-      const status = await UserService.delete(deletedSampleUser.id);
+      const status = await UserService.delete(sampleUserAtt.id);
 
-      expect(spyUpdate).toBeCalled();
+      expect(spyUpdate).toBeCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          where: expect.objectContaining({
+            is_deleted: false,
+          }),
+        })
+      );
       expect(status).toBe(false);
     });
   });

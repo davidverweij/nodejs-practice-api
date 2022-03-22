@@ -1,51 +1,87 @@
-import { getMockReq, getMockRes } from "@jest-mock/express";
-import { StatusCodes } from "http-status-codes";
-import { UserController } from "../../src/controllers";
+import supertest, { SuperTest, Test } from "supertest";
+import { Sequelize } from "sequelize";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import app from "../../src/app";
+import { initModels } from "../../src/data-access";
+import { Group, GroupPermissions } from "../../src/models/group";
 import User from "../../src/models/user";
-import { UserService } from "../../src/services";
-import mockFunction from "../jestHelpers";
+import ApiUser from "../../src/models/apiUser";
+import { jwtSecret } from "../../src/config";
 
-// Mock Dependencies
-jest.mock("../../src/services");
+describe("UserController", () => {
+  let mockSequelize: Sequelize;
+  let request: SuperTest<Test>;
 
-describe("UserController.all", () => {
-  describe("should return an unmodified list of users", () => {
-    it("when there are users in the DB", async () => {
-      // Create casted User object
-      const users = [
-        {
-          id: "123",
-          login: "login1",
-          password: "password1",
-          age: 1,
-        },
-      ] as User[];
-      const mockedGetAll = mockFunction(UserService.getAll);
-      mockedGetAll.mockResolvedValue(users);
+  let user: User;
+  let group: Group;
+  let apiUser: ApiUser;
 
-      const req = getMockReq();
-      const { res } = getMockRes();
+  const userAtt = { login: "login1", password: "pass1", age: 1 };
+  const groupAtt = {
+    name: "admin",
+    permissions: [
+      GroupPermissions.DELETE,
+      GroupPermissions.READ,
+      GroupPermissions.WRITE,
+    ],
+  };
+  const apiUserAtt = {
+    login: "apiuser1",
+    password: "1234",
+  };
+  const apiUserAttSQL = {
+    login: apiUserAtt.login,
+    password: bcrypt.hashSync(apiUserAtt.password, bcrypt.genSaltSync(10)),
+  };
 
-      // ACT
-      await UserController.all(req, res);
-
-      // ASSERT
-      expect(res.status).toBeCalledWith(StatusCodes.OK);
-      expect(res.json).toBeCalledWith(users);
+  beforeAll(async () => {
+    mockSequelize = new Sequelize({
+      database: "testdatabase",
+      dialect: "sqlite",
+      username: "root",
+      password: "",
+      logging: false,
     });
-    it("when there are NO users in the DB", async () => {
-      const mockedGetAll = mockFunction(UserService.getAll);
-      mockedGetAll.mockResolvedValue([]);
+    initModels(mockSequelize);
+    request = supertest(app);
+  });
 
-      const req = getMockReq();
-      const { res } = getMockRes();
+  beforeEach(async () => {
+    user = await User.create(userAtt);
+    apiUser = await ApiUser.create(apiUserAttSQL);
+    // group = await Group.create(groupAtt);
+    // user.addGroup(group);
+  });
 
-      // ACT
-      await UserController.all(req, res);
+  afterEach(async () => {
+    jest.clearAllMocks();
+    await mockSequelize.truncate({ cascade: true }); // clear all inserted models
+  });
 
-      // ASSERT
-      expect(res.status).toBeCalledWith(StatusCodes.OK);
-      expect(res.json).toBeCalledWith([]);
+  afterAll(async () => {
+    await mockSequelize.close();
+  });
+
+  describe("/all", () => {
+    it("should 401 when no token is provded", async () => {
+      const res = await request.get("/user/all");
+
+      expect(res.status).toBe(401);
+    });
+    it("should 403 when token is invalid", async () => {
+      const res = await request
+        .get("/user/all")
+        .set("x-access-token", "something-invalid");
+
+      expect(res.status).toBe(403);
+    });
+    it("should return all users", async () => {
+      const res = await request
+        .get("/user/all")
+        .set("x-access-token", jwt.sign(apiUserAtt, jwtSecret));
+
+      expect(res.status).toBe(200);
     });
   });
 });
