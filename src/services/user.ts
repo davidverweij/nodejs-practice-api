@@ -125,7 +125,7 @@ class UserService {
       where: {
         login: {
           // case-insensitive substring 'search'
-          [Op.substring]: `%${loginSubstring}%`,
+          [Op.iLike]: `%${loginSubstring}%`,
         },
         is_deleted: false,
       },

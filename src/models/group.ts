@@ -37,7 +37,7 @@ class Group extends Model<
         id: {
           type: DataTypes.UUID,
           primaryKey: true,
-          defaultValue: DataTypes.UUIDV4,
+          autoIncrement: true,
         },
         name: {
           type: DataTypes.STRING,
