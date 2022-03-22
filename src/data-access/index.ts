@@ -2,14 +2,20 @@ import { Sequelize } from "sequelize";
 import { Group } from "../models/group";
 import User from "../models/user";
 import UserGroup from "../models/userGroup";
-import config from "../config";
+import { database } from "../config";
 
 // create db object
-const sequelize = new Sequelize(config.name, config.user, config.password, {
-  host: config.host,
-  port: config.port,
-  dialect: "postgres",
-});
+const sequelize = new Sequelize(
+  database.name,
+  database.user,
+  database.password,
+  {
+    host: database.host,
+    port: database.port,
+    dialect: "postgres",
+    logging: database.logging,
+  }
+);
 
 /**
  * Opens a connection with PostgreSQL, failes if authentication fails.

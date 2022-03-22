@@ -18,11 +18,7 @@ class GroupService {
    * @return {Promise<Group|null>} The found User or null if not found
    */
   static findByID(id: string): Promise<Group | null> {
-    return Group.findOne({
-      where: {
-        id,
-      },
-    });
+    return Group.findByPk(id);
   }
 
   /**

@@ -5,6 +5,7 @@ import {
   QueryRequestSchema,
   UserRequestSchema,
 } from "../models/userValidation";
+import { NotFoundError } from "../errors";
 import { UserService } from "../services";
 
 class UserController {
@@ -25,9 +26,7 @@ class UserController {
   static id = async (req: Request, res: Response) => {
     const user = await UserService.findByID(req.params.id);
     if (!user) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: `User '${req.params.id}' was not found.` });
+      throw new NotFoundError(`User '${req.params.id}' was not found.`);
     }
     return res.status(StatusCodes.OK).json(user);
   };
@@ -63,9 +62,7 @@ class UserController {
   static delete = async (req: Request, res: Response) => {
     const success = await UserService.delete(req.params.id);
     if (!success) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: `User '${req.params.id}' was not found.` });
+      throw new NotFoundError(`User '${req.params.id}' was not found.`);
     }
     return res.status(StatusCodes.NO_CONTENT).send();
   };

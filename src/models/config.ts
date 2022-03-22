@@ -4,4 +4,5 @@ export default interface DatabaseConfig {
   password: string;
   host: string;
   port: number;
+  logging: boolean;
 }
