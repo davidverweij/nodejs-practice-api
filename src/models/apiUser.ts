@@ -28,7 +28,7 @@ class ApiUser extends Model<
         id: {
           type: DataTypes.UUID,
           primaryKey: true,
-          autoIncrement: true,
+          defaultValue: DataTypes.UUIDV4,
         },
         login: {
           type: DataTypes.STRING,

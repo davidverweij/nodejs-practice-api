@@ -63,8 +63,8 @@ class User extends Model<
       {
         id: {
           type: DataTypes.UUID,
+          defaultValue: DataTypes.UUIDV4,
           primaryKey: true,
-          autoIncrement: true,
         },
         login: {
           type: DataTypes.STRING,
