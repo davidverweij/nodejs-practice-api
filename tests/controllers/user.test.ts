@@ -2,20 +2,19 @@
 /* eslint-disable no-return-assign */
 
 import supertest, { SuperTest, Test } from "supertest";
-import { Sequelize } from "sequelize";
-import jwt from "jsonwebtoken";
+import { Sequelize, Transaction } from "sequelize";
 import bcrypt from "bcrypt";
 import app from "../../src/app";
 import { initModels } from "../../src/data-access";
 import { Group, GroupPermissions } from "../../src/models/group";
 import User from "../../src/models/user";
 import ApiUser from "../../src/models/apiUser";
-import { jwtSecret } from "../../src/config";
 import { logger, errorLogger } from "../../src/config/logger";
 
 describe("UserController", () => {
   let mockSequelize: Sequelize;
   let request: SuperTest<Test>;
+  let validJwtToken: string;
 
   logger.transports.forEach((t) => (t.silent = true));
   errorLogger.transports.forEach((t) => (t.silent = true));
@@ -23,8 +22,8 @@ describe("UserController", () => {
   const userAtt = {
     id: "769ee62d-7ea6-473f-a289-0547f82fd5e7",
     login: "login1",
-    password: "pass1",
-    age: 1,
+    password: "password",
+    age: 5,
   };
   const groupAtt = {
     id: "c2a8995b-9b10-440b-9755-335949d0631f",
@@ -35,14 +34,21 @@ describe("UserController", () => {
       GroupPermissions.WRITE,
     ],
   };
-  const apiUserAtt = {
-    id: "6db9a161-2e0b-498b-86c6-4ef63e5525d0",
-    login: "apiuser1",
+  const assignGroupPayload = {
+    groupId: "c2a8995b-9b10-440b-9755-335949d0631f",
+    userIds: [
+      "769ee62d-7ea6-473f-a289-0547f82fd5e7",
+      "83bf149c-2532-46ad-90ac-bfac9c27de9f",
+    ],
+  };
+  const apiUserPayload = {
+    username: "apiuser1",
     password: "1234",
   };
   const apiUserAttSQL = {
-    ...apiUserAtt,
-    password: bcrypt.hashSync(apiUserAtt.password, bcrypt.genSaltSync(10)),
+    login: apiUserPayload.username,
+    id: "6db9a161-2e0b-498b-86c6-4ef63e5525d0",
+    password: bcrypt.hashSync(apiUserPayload.password, bcrypt.genSaltSync(10)),
   };
 
   beforeAll(async () => {
@@ -55,31 +61,20 @@ describe("UserController", () => {
     });
     initModels(mockSequelize);
     request = supertest(app);
+
+    // get valid JWT token (default valid 120 seconds - should be enough..)
+    jest
+      .spyOn(ApiUser, "findOne")
+      .mockImplementation(async () => new ApiUser(apiUserAttSQL));
+    const res = await request.post("/login").send(apiUserPayload);
+    validJwtToken = res.body.token;
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
   });
 
-  describe("/all", () => {
-    it("should 401 when no token is provded", async () => {
-      const spy = jest.spyOn(User, "findAll");
-
-      const res = await request.get("/user/all");
-
-      expect(res.status).toBe(401);
-      expect(spy).not.toBeCalled();
-    });
-    it("should 403 when token is invalid", async () => {
-      const spy = jest.spyOn(User, "findAll");
-
-      const res = await request
-        .get("/user/all")
-        .set("x-access-token", "something-invalid");
-
-      expect(res.status).toBe(403);
-      expect(spy).not.toBeCalled();
-    });
+  describe("GET /all", () => {
     it("should return all users", async () => {
       const spy = jest
         .spyOn(User, "findAll")
@@ -87,11 +82,198 @@ describe("UserController", () => {
 
       const res = await request
         .get("/user/all")
-        .set("x-access-token", jwt.sign(apiUserAtt, jwtSecret));
+        .set("x-access-token", validJwtToken);
 
       expect(res.status).toBe(200);
       expect(spy).toBeCalled();
       expect(res.body[0].id).toEqual(userAtt.id);
+    });
+  });
+
+  describe("GET /suggest", () => {
+    it("should require a 'filter' param", async () => {
+      const res = await request
+        .get("/user/suggest")
+        .set("x-access-token", validJwtToken);
+
+      expect(res.status).toBe(400);
+    });
+
+    it("should NOT require a limit", async () => {
+      const spy = jest
+        .spyOn(User, "findAll")
+        .mockImplementation(async () => [new User(userAtt)]);
+
+      const res = await request
+        .get("/user/all")
+        .set("x-access-token", validJwtToken)
+        .query({ filter: "login" });
+
+      expect(res.status).toBe(200);
+      expect(spy).toBeCalled();
+      expect(res.body[0].id).toEqual(userAtt.id);
+    });
+
+    it("should work with any limit", async () => {
+      const spy = jest
+        .spyOn(User, "findAll")
+        .mockImplementation(async () => [new User(userAtt)]);
+
+      const res = await request
+        .get("/user/all")
+        .set("x-access-token", validJwtToken)
+        .query({ filter: "login", limit: -99 });
+
+      expect(res.status).toBe(200);
+      expect(spy).toBeCalled();
+      expect(res.body[0].id).toEqual(userAtt.id);
+    });
+
+    it("should return (an empty array) despite no filter matches", async () => {
+      const spy = jest
+        .spyOn(User, "findAll")
+        .mockImplementation(async () => []);
+
+      const res = await request
+        .get("/user/all")
+        .set("x-access-token", validJwtToken)
+        .query({ filter: "noMatches" });
+
+      expect(res.status).toBe(200);
+      expect(spy).toBeCalled();
+      expect(res.body).toEqual([]);
+    });
+  });
+
+  describe("PUT /togroup", () => {
+    it("should fail when group not found", async () => {
+      const spy = jest
+        .spyOn(Group, "findByPk")
+        .mockImplementation(async () => null);
+
+      const res = await request
+        .put("/user/togroup")
+        .set("x-access-token", validJwtToken)
+        .send(assignGroupPayload);
+
+      expect(res.status).toBe(404);
+      expect(spy).toBeCalled();
+    });
+
+    it("should fail AND rollback when ANY of users not found", async () => {
+      const spy = jest
+        .spyOn(Group, "findByPk")
+        .mockImplementation(async () => new Group(groupAtt));
+      const spyAddGroup = jest
+        .spyOn(User.prototype, "addGroup")
+        .mockImplementation(async () => {});
+      const spyUser = jest
+        .spyOn(User, "findByPk")
+        .mockImplementationOnce(async () => new User(userAtt))
+        .mockImplementationOnce(async () => null);
+      const spyTransactionRollback = jest.spyOn(
+        Transaction.prototype,
+        "rollback"
+      );
+      const spyTransactionCommit = jest.spyOn(Transaction.prototype, "commit");
+
+      const res = await request
+        .put("/user/togroup")
+        .set("x-access-token", validJwtToken)
+        .send(assignGroupPayload);
+
+      expect(res.status).toBe(404);
+      expect(spy).toBeCalledTimes(1);
+      expect(spyUser).toBeCalledTimes(2);
+      expect(spyAddGroup).toBeCalledTimes(1);
+      expect(spyTransactionRollback).toBeCalledTimes(1);
+      expect(spyTransactionCommit).not.toBeCalled();
+    });
+  });
+
+  describe("GET /:id", () => {
+    it("should return the found user", async () => {
+      const spy = jest
+        .spyOn(User, "findOne")
+        .mockImplementation(async () => new User(userAtt));
+
+      const res = await request
+        .get(`/user/${userAtt.id}`)
+        .set("x-access-token", validJwtToken);
+
+      expect(res.status).toBe(200);
+      expect(spy).toBeCalled();
+      expect(res.body.id).toEqual(userAtt.id);
+    });
+
+    it("should fail on formatting", async () => {
+      const spy = jest
+        .spyOn(User, "findOne")
+        .mockImplementation(async () => new User(userAtt));
+
+      const res = await request
+        .get(`/user/${userAtt.id}1345`) // notice the additional chars
+        .set("x-access-token", validJwtToken);
+
+      expect(res.status).toBe(400);
+      expect(spy).not.toBeCalled();
+    });
+
+    it("should 404 on not found", async () => {
+      jest.spyOn(User, "findOne").mockImplementation(async () => null);
+
+      const res = await request
+        .get(`/user/${userAtt.id}`)
+        .set("x-access-token", validJwtToken);
+
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe("POST /", () => {
+    it("should return the created user id", async () => {
+      const spy = jest
+        .spyOn(User, "create")
+        .mockImplementation(async () => new User(userAtt));
+      const { id, ...userPayload } = userAtt;
+
+      const res = await request
+        .post("/user")
+        .set("x-access-token", validJwtToken)
+        .send(userPayload);
+
+      expect(res.status).toBe(201);
+      expect(spy).toBeCalled();
+      expect(res.body.id).toEqual(userAtt.id);
+    });
+  });
+
+  describe("PUT /:id", () => {
+    it("should return 204", async () => {
+      const spy = jest
+        .spyOn(User, "update")
+        .mockImplementation(async () => [1]);
+      const { id, ...userPayload } = userAtt;
+
+      const res = await request
+        .put(`/user/${userAtt.id}`)
+        .set("x-access-token", validJwtToken)
+        .send(userPayload);
+
+      expect(res.status).toBe(204);
+      expect(spy).toBeCalled();
+    });
+
+    it("should 404 on not found", async () => {
+      jest.spyOn(User, "update").mockImplementation(async () => [0]);
+      const { id, ...userPayload } = userAtt;
+
+      const res = await request
+        .put(`/user/${userAtt.id}`)
+        .set("x-access-token", validJwtToken)
+        .send(userPayload);
+
+      expect(res.status).toBe(404);
     });
   });
 });
