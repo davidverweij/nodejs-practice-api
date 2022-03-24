@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 // import { ValidatedRequest } from "express-joi-validation";
-import { InvalidJwtError, MissingJwtError } from "../errors";
+import { InvalidJwtError } from "../errors";
 // import { TokenRequestSchema } from "../models/authValidation";
 import ApiUser from "../models/apiUser";
 import { jwtSecret } from "../config";
@@ -24,7 +24,7 @@ passport.use(
       const validPassword = await bcrypt.compare(password, apiUser.password);
       if (!validPassword) return done(null, false);
 
-      return done(null, { username: password });
+      return done(null, true);
     }
   )
 );
@@ -37,14 +37,8 @@ class AuthService {
 
   // Express middleware to (dis)allow request with JWT tokens
   static checkToken = (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers["x-access-token"];
+    const token = req.headers["x-access-token"] as string;
 
-    // NOTE: Joi's validator should provide a ValidatedRequest, but results
-    // in typing error. This check (abeit redundant when used with validator)
-    // ensures following code can assume token is a string
-    if (typeof token !== "string") {
-      throw new MissingJwtError("No token provided.");
-    }
     return jwt.verify(token, jwtSecret, (err) => {
       if (err) throw new InvalidJwtError("Failed to authenticate token.");
       next();

@@ -9,7 +9,7 @@ import {
 } from "../models/userValidation";
 import { UserController, UserGroupController } from "../controllers";
 import { jwtAuthSchema } from "../models/authValidation";
-import { AuthService } from "../services/auth";
+import { AuthService } from "../services";
 
 const userRoute = express.Router();
 
