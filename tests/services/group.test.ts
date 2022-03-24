@@ -37,7 +37,7 @@ describe("GroupService", () => {
     it("should return an UUID upon creation", async () => {
       const spy = jest
         .spyOn(Group, "create")
-        .mockImplementation(() => new Group(adminGroupAtt));
+        .mockImplementation(() => Promise.resolve(new Group(adminGroupAtt)));
 
       const result = await GroupService.create("newGroup", []);
 
@@ -91,7 +91,7 @@ describe("GroupService", () => {
       const spyUpdate = jest.spyOn(Group, "update");
       const spyFind = jest
         .spyOn(Group, "findByPk")
-        .mockImplementation(async () => new Group(adminGroupAtt));
+        .mockImplementation(() => Promise.resolve(new Group(adminGroupAtt)));
       // using .prototype as destroy() is called on an instance, not the class
       const spyDelete = jest
         .spyOn(Group.prototype, "destroy")

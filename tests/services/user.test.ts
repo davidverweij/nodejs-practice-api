@@ -109,7 +109,7 @@ describe("UserService", () => {
     it("should default to NO limit", async () => {
       const spy = jest
         .spyOn(User, "findAll")
-        .mockImplementation(async () => [new User(sampleUserAtt)]);
+        .mockImplementation(() => Promise.resolve([new User(sampleUserAtt)]));
 
       await UserService.getAutoSuggest("test");
 
@@ -118,7 +118,7 @@ describe("UserService", () => {
     it("should pass-through any positive limit", async () => {
       const spy = jest
         .spyOn(User, "findAll")
-        .mockImplementation(async () => [new User(sampleUserAtt)]);
+        .mockImplementation(() => Promise.resolve([new User(sampleUserAtt)]));
       const expected = 77;
 
       await UserService.getAutoSuggest("test", expected);
@@ -128,7 +128,7 @@ describe("UserService", () => {
     it("should ignore negative limits", async () => {
       const spy = jest
         .spyOn(User, "findAll")
-        .mockImplementation(async () => [new User(sampleUserAtt)]);
+        .mockImplementation(() => Promise.resolve([new User(sampleUserAtt)]));
 
       await UserService.getAutoSuggest("test", -23);
 
@@ -138,7 +138,7 @@ describe("UserService", () => {
     it("should ignore users that are soft deleted", async () => {
       const spy = jest
         .spyOn(User, "findAll")
-        .mockImplementation(async () => []);
+        .mockImplementation(() => Promise.resolve([]));
 
       await UserService.getAutoSuggest("test");
 

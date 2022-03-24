@@ -9,7 +9,7 @@ import { initModels } from "../../src/data-access";
 import { Group, GroupPermissions } from "../../src/models/group";
 import User from "../../src/models/user";
 import ApiUser from "../../src/models/apiUser";
-import { logger, errorLogger } from "../../src/config/logger";
+import { logger, errorLogger } from "../../src/config";
 
 describe("UserController", () => {
   let mockSequelize: Sequelize;
@@ -65,12 +65,12 @@ describe("UserController", () => {
     // get valid JWT token (default valid 120 seconds - should be enough..)
     jest
       .spyOn(ApiUser, "findOne")
-      .mockImplementation(async () => new ApiUser(apiUserAttSQL));
+      .mockImplementation(() => Promise.resolve(new ApiUser(apiUserAttSQL)));
     const res = await request.post("/login").send(apiUserPayload);
     validJwtToken = res.body.token;
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
@@ -78,7 +78,7 @@ describe("UserController", () => {
     it("should return all users", async () => {
       const spy = jest
         .spyOn(User, "findAll")
-        .mockImplementation(async () => [new User(userAtt)]);
+        .mockImplementation(() => Promise.resolve([new User(userAtt)]));
 
       const res = await request
         .get("/user/all")
@@ -102,7 +102,7 @@ describe("UserController", () => {
     it("should NOT require a limit", async () => {
       const spy = jest
         .spyOn(User, "findAll")
-        .mockImplementation(async () => [new User(userAtt)]);
+        .mockImplementation(() => Promise.resolve([new User(userAtt)]));
 
       const res = await request
         .get("/user/all")
@@ -117,7 +117,7 @@ describe("UserController", () => {
     it("should work with any limit", async () => {
       const spy = jest
         .spyOn(User, "findAll")
-        .mockImplementation(async () => [new User(userAtt)]);
+        .mockImplementation(() => Promise.resolve([new User(userAtt)]));
 
       const res = await request
         .get("/user/all")
@@ -132,7 +132,7 @@ describe("UserController", () => {
     it("should return (an empty array) despite no filter matches", async () => {
       const spy = jest
         .spyOn(User, "findAll")
-        .mockImplementation(async () => []);
+        .mockImplementation(() => Promise.resolve([]));
 
       const res = await request
         .get("/user/all")
@@ -149,7 +149,7 @@ describe("UserController", () => {
     it("should fail when group not found", async () => {
       const spy = jest
         .spyOn(Group, "findByPk")
-        .mockImplementation(async () => null);
+        .mockImplementation(() => Promise.resolve(null));
 
       const res = await request
         .put("/user/togroup")
@@ -163,14 +163,14 @@ describe("UserController", () => {
     it("should fail AND rollback when ANY of users not found", async () => {
       const spy = jest
         .spyOn(Group, "findByPk")
-        .mockImplementation(async () => new Group(groupAtt));
+        .mockImplementation(() => Promise.resolve(new Group(groupAtt)));
       const spyAddGroup = jest
         .spyOn(User.prototype, "addGroup")
-        .mockImplementation(async () => {});
+        .mockImplementation(() => Promise.resolve());
       const spyUser = jest
         .spyOn(User, "findByPk")
-        .mockImplementationOnce(async () => new User(userAtt))
-        .mockImplementationOnce(async () => null);
+        .mockImplementationOnce(() => Promise.resolve(new User(userAtt)))
+        .mockImplementationOnce(() => Promise.resolve(null));
       const spyTransactionRollback = jest.spyOn(
         Transaction.prototype,
         "rollback"
@@ -195,7 +195,7 @@ describe("UserController", () => {
     it("should return the found user", async () => {
       const spy = jest
         .spyOn(User, "findOne")
-        .mockImplementation(async () => new User(userAtt));
+        .mockImplementation(() => Promise.resolve(new User(userAtt)));
 
       const res = await request
         .get(`/user/${userAtt.id}`)
@@ -209,7 +209,7 @@ describe("UserController", () => {
     it("should fail on formatting", async () => {
       const spy = jest
         .spyOn(User, "findOne")
-        .mockImplementation(async () => new User(userAtt));
+        .mockImplementation(() => Promise.resolve(new User(userAtt)));
 
       const res = await request
         .get(`/user/${userAtt.id}1345`) // notice the additional chars
@@ -220,7 +220,9 @@ describe("UserController", () => {
     });
 
     it("should 404 on not found", async () => {
-      jest.spyOn(User, "findOne").mockImplementation(async () => null);
+      jest
+        .spyOn(User, "findOne")
+        .mockImplementation(() => Promise.resolve(null));
 
       const res = await request
         .get(`/user/${userAtt.id}`)
@@ -234,7 +236,7 @@ describe("UserController", () => {
     it("should return the created user id", async () => {
       const spy = jest
         .spyOn(User, "create")
-        .mockImplementation(async () => new User(userAtt));
+        .mockImplementation(() => Promise.resolve(new User(userAtt)));
       const { id, ...userPayload } = userAtt;
 
       const res = await request
@@ -252,7 +254,7 @@ describe("UserController", () => {
     it("should return 204", async () => {
       const spy = jest
         .spyOn(User, "update")
-        .mockImplementation(async () => [1]);
+        .mockImplementation(() => Promise.resolve([1]));
       const { id, ...userPayload } = userAtt;
 
       const res = await request
@@ -265,7 +267,7 @@ describe("UserController", () => {
     });
 
     it("should 404 on not found", async () => {
-      jest.spyOn(User, "update").mockImplementation(async () => [0]);
+      jest.spyOn(User, "update").mockImplementation(() => Promise.resolve([0]));
       const { id, ...userPayload } = userAtt;
 
       const res = await request
