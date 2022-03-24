@@ -11,7 +11,6 @@ import { jwtSecret } from "../config";
 
 passport.use(
   new LocalStrategy(
-    { session: false },
     async (
       username: string,
       password: string,
