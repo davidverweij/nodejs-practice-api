@@ -2,3 +2,4 @@
 export { default as NotFoundError } from "./notFound";
 export { default as errorHandler } from "./handler";
 export { default as BaseError } from "./base";
+export * from "./jwt";

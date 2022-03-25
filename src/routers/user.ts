@@ -8,10 +8,15 @@ import {
   groupAssignSchema,
 } from "../models/userValidation";
 import { UserController, UserGroupController } from "../controllers";
+import { jwtAuthSchema } from "../models/authValidation";
+import { AuthService } from "../services";
 
 const userRoute = express.Router();
 
 const validator = createValidator({});
+
+// all routes in userRoute are protected by JWT access
+userRoute.use(validator.headers(jwtAuthSchema), AuthService.checkToken);
 
 // Get copy of DB (for debugging/testing)
 userRoute.get("/all", UserController.all);
