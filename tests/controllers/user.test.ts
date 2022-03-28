@@ -158,6 +158,10 @@ describe("UserController", () => {
         .spyOn(Transaction.prototype, "rollback")
         .mockImplementation(() => Promise.resolve());
       const spyTransactionCommit = jest.spyOn(Transaction.prototype, "commit");
+      // mock preparing method that queries the DB before the transaction begins
+      jest
+        .spyOn(Transaction.prototype, "prepareEnvironment" as any)
+        .mockImplementation(() => Transaction.LOCK);
 
       const res = await request
         .put("/user/togroup")
