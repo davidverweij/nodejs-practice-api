@@ -21,7 +21,7 @@ describe("GroupService", () => {
     // in the main code base
     mockSequelize = new Sequelize({
       database: "testdatabase",
-      dialect: "sqlite",
+      dialect: "postgres",
       username: "root",
       password: "",
       logging: false,

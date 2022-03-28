@@ -2,6 +2,7 @@ import { Sequelize } from "sequelize";
 import { initModels } from "../../src/data-access";
 import User from "../../src/models/user";
 import { UserService } from "../../src/services";
+import { uuidRegex } from "../jestHelpers";
 
 describe("UserService", () => {
   let mockSequelize: Sequelize;
@@ -18,7 +19,7 @@ describe("UserService", () => {
     // in the main code base
     mockSequelize = new Sequelize({
       database: "testdatabase",
-      dialect: "sqlite",
+      dialect: "postgres",
       username: "root",
       password: "",
       logging: false,
@@ -39,9 +40,7 @@ describe("UserService", () => {
       const result = await UserService.create("login", "pass", 1);
 
       expect(spy).toBeCalled();
-      expect(result).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-      );
+      expect(result).toMatch(uuidRegex);
     });
   });
 

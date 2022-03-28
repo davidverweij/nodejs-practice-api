@@ -3,18 +3,17 @@
 
 import supertest, { SuperTest, Test } from "supertest";
 import { Sequelize, Transaction } from "sequelize";
-import bcrypt from "bcrypt";
 import app from "../../src/app";
 import { initModels } from "../../src/data-access";
 import { Group, GroupPermissions } from "../../src/models/group";
 import User from "../../src/models/user";
-import ApiUser from "../../src/models/apiUser";
 import { logger, errorLogger } from "../../src/config";
 
 describe("UserController", () => {
   let mockSequelize: Sequelize;
   let request: SuperTest<Test>;
-  let validJwtToken: string;
+  const validJwtToken: string =
+    " eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFwaXVzZXIxIiwicGFzc3dvcmQiOiIxMjM0IiwiaWF0IjoxNjQ4NDg0MjQwfQ.b48921LLr3ebVJfLRmuy7nyqgBs1YhXpXGKoz75Xl_g";
 
   logger.transports.forEach((t) => (t.silent = true));
   errorLogger.transports.forEach((t) => (t.silent = true));
@@ -41,33 +40,17 @@ describe("UserController", () => {
       "83bf149c-2532-46ad-90ac-bfac9c27de9f",
     ],
   };
-  const apiUserPayload = {
-    username: "apiuser1",
-    password: "1234",
-  };
-  const apiUserAttSQL = {
-    login: apiUserPayload.username,
-    id: "6db9a161-2e0b-498b-86c6-4ef63e5525d0",
-    password: bcrypt.hashSync(apiUserPayload.password, bcrypt.genSaltSync(10)),
-  };
 
   beforeAll(async () => {
     mockSequelize = new Sequelize({
       database: "testdatabase",
-      dialect: "sqlite",
+      dialect: "postgres",
       username: "root",
       password: "",
       logging: false,
     });
     initModels(mockSequelize);
     request = supertest(app);
-
-    // get valid JWT token (default valid 120 seconds - should be enough..)
-    jest
-      .spyOn(ApiUser, "findOne")
-      .mockImplementation(() => Promise.resolve(new ApiUser(apiUserAttSQL)));
-    const res = await request.post("/login").send(apiUserPayload);
-    validJwtToken = res.body.token;
   });
 
   afterEach(() => {
@@ -171,10 +154,9 @@ describe("UserController", () => {
         .spyOn(User, "findByPk")
         .mockImplementationOnce(() => Promise.resolve(new User(userAtt)))
         .mockImplementationOnce(() => Promise.resolve(null));
-      const spyTransactionRollback = jest.spyOn(
-        Transaction.prototype,
-        "rollback"
-      );
+      const spyTransactionRollback = jest
+        .spyOn(Transaction.prototype, "rollback")
+        .mockImplementation(() => Promise.resolve());
       const spyTransactionCommit = jest.spyOn(Transaction.prototype, "commit");
 
       const res = await request

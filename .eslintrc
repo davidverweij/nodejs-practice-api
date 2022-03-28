@@ -9,7 +9,7 @@
   "parserOptions": {
     "project": "./tsconfig.json"
   },
-  "ignorePatterns": ["misc/", "dist/", "node_modules/"],
+  "ignorePatterns": ["misc/", "dist/", "node_modules/", "coverage/", "logs/"],
   "rules": {
     "prettier/prettier": 2 // Means error
   }

@@ -1,17 +1,16 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { getMockReq, getMockRes } from "@jest-mock/express";
 import { jwtSecret } from "../../src/config";
 import { AuthService } from "../../src/services";
-import { InvalidJwtError, MissingJwtError } from "../../src/errors";
+import { InvalidJwtError } from "../../src/errors";
+import { validateToken } from "../jestHelpers";
 
 describe("AuthService", () => {
   describe("getJwt should generated expiring tokens", () => {
     it("such as an expired token", async () => {
       const token = AuthService.getJwt({}, -1);
 
-      const decoded = jwt.decode(token) as JwtPayload;
-      const expiry = decoded.exp as number;
-      const valid = Date.now() <= expiry * 1000;
+      const valid = validateToken(token);
 
       expect(valid).toBe(false);
       expect(() => jwt.verify(token, jwtSecret)).toThrow();
@@ -20,9 +19,7 @@ describe("AuthService", () => {
     it("such as a valid token", async () => {
       const token = AuthService.getJwt({}, 3600);
 
-      const decoded = jwt.decode(token) as JwtPayload;
-      const expiry = decoded.exp as number;
-      const valid = Date.now() <= expiry * 1000;
+      const valid = validateToken(token);
 
       expect(valid).toBe(true);
       expect(() => jwt.verify(token, jwtSecret)).not.toThrow();
@@ -35,7 +32,7 @@ describe("AuthService", () => {
       const { res, next } = getMockRes();
 
       expect(() => AuthService.checkToken(req, res, next)).toThrow(
-        MissingJwtError
+        InvalidJwtError
       );
     });
 
