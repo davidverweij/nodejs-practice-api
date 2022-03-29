@@ -16,9 +16,6 @@ describe("GroupService", () => {
   };
 
   beforeAll(async () => {
-    // fresh (embedded) DB. Note that we do NOT use PostgreSQL
-    // for testing - disallowing any PostgreSQL specific features
-    // in the main code base
     mockSequelize = new Sequelize({
       database: "testdatabase",
       dialect: "postgres",

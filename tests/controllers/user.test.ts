@@ -3,6 +3,7 @@
 
 import supertest, { SuperTest, Test } from "supertest";
 import { Sequelize, Transaction } from "sequelize";
+import { StatusCodes } from "http-status-codes";
 import app from "../../src/app";
 import { initModels } from "../../src/data-access";
 import { Group, GroupPermissions } from "../../src/models/group";
@@ -67,7 +68,7 @@ describe("UserController", () => {
         .get("/user/all")
         .set("x-access-token", validJwtToken);
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(StatusCodes.OK);
       expect(spy).toBeCalled();
       expect(res.body[0].id).toEqual(userAtt.id);
     });
@@ -79,7 +80,7 @@ describe("UserController", () => {
         .get("/user/suggest")
         .set("x-access-token", validJwtToken);
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(StatusCodes.BAD_REQUEST);
     });
 
     it("should NOT require a limit", async () => {
@@ -92,7 +93,7 @@ describe("UserController", () => {
         .set("x-access-token", validJwtToken)
         .query({ filter: "login" });
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(StatusCodes.OK);
       expect(spy).toBeCalled();
       expect(res.body[0].id).toEqual(userAtt.id);
     });
@@ -107,7 +108,7 @@ describe("UserController", () => {
         .set("x-access-token", validJwtToken)
         .query({ filter: "login", limit: -99 });
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(StatusCodes.OK);
       expect(spy).toBeCalled();
       expect(res.body[0].id).toEqual(userAtt.id);
     });
@@ -122,7 +123,7 @@ describe("UserController", () => {
         .set("x-access-token", validJwtToken)
         .query({ filter: "noMatches" });
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(StatusCodes.OK);
       expect(spy).toBeCalled();
       expect(res.body).toEqual([]);
     });
@@ -139,7 +140,7 @@ describe("UserController", () => {
         .set("x-access-token", validJwtToken)
         .send(assignGroupPayload);
 
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(StatusCodes.NOT_FOUND);
       expect(spy).toBeCalled();
     });
 
@@ -168,7 +169,7 @@ describe("UserController", () => {
         .set("x-access-token", validJwtToken)
         .send(assignGroupPayload);
 
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(StatusCodes.NOT_FOUND);
       expect(spy).toBeCalledTimes(1);
       expect(spyUser).toBeCalledTimes(2);
       expect(spyAddGroup).toBeCalledTimes(1);
@@ -187,7 +188,7 @@ describe("UserController", () => {
         .get(`/user/${userAtt.id}`)
         .set("x-access-token", validJwtToken);
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(StatusCodes.OK);
       expect(spy).toBeCalled();
       expect(res.body.id).toEqual(userAtt.id);
     });
@@ -201,7 +202,7 @@ describe("UserController", () => {
         .get(`/user/${userAtt.id}1345`) // notice the additional chars
         .set("x-access-token", validJwtToken);
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(StatusCodes.BAD_REQUEST);
       expect(spy).not.toBeCalled();
     });
 
@@ -214,7 +215,7 @@ describe("UserController", () => {
         .get(`/user/${userAtt.id}`)
         .set("x-access-token", validJwtToken);
 
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(StatusCodes.NOT_FOUND);
     });
   });
 
@@ -230,7 +231,7 @@ describe("UserController", () => {
         .set("x-access-token", validJwtToken)
         .send(userPayload);
 
-      expect(res.status).toBe(201);
+      expect(res.status).toBe(StatusCodes.CREATED);
       expect(spy).toBeCalled();
       expect(res.body.id).toEqual(userAtt.id);
     });
@@ -248,7 +249,7 @@ describe("UserController", () => {
         .set("x-access-token", validJwtToken)
         .send(userPayload);
 
-      expect(res.status).toBe(204);
+      expect(res.status).toBe(StatusCodes.NO_CONTENT);
       expect(spy).toBeCalled();
     });
 
@@ -261,7 +262,7 @@ describe("UserController", () => {
         .set("x-access-token", validJwtToken)
         .send(userPayload);
 
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(StatusCodes.NOT_FOUND);
     });
   });
 });
