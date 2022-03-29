@@ -24,7 +24,7 @@ INSERT INTO users (login, password, age) VALUES
     ('username_4', 'password_4', 38),
     ('simple_username_1', 'simple_password_1', 51),
     ('simple_username_2', 'simple_password_2', 52);
-
+    
 -- Confirm insert succeeded with
 
 SELECT * FROM users;

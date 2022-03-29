@@ -7,7 +7,7 @@ import { NextFunction, Request, Response } from "express";
 import { InvalidJwtError } from "../errors";
 // import { TokenRequestSchema } from "../models/authValidation";
 import ApiUser from "../models/apiUser";
-import { jwtSecret } from "../config";
+import { jwtSecret, jwtLifespan } from "../config";
 
 passport.use(
   new LocalStrategy(
@@ -29,8 +29,8 @@ passport.use(
 );
 
 class AuthService {
-  static getJwt(payload: Object): string {
-    const token = jwt.sign(payload, jwtSecret, { expiresIn: 60 });
+  static getJwt(payload: Object, lifespan: number = jwtLifespan): string {
+    const token = jwt.sign(payload, jwtSecret, { expiresIn: lifespan });
     return token;
   }
 

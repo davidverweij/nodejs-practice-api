@@ -13,6 +13,7 @@ const envValidator = Joi.object()
     DB_PORT: Joi.string().required(),
     DB_LOGS: Joi.boolean().required(),
     JWT_SECRET: Joi.string().required(),
+    JWT_LIFESPAN: Joi.number().required(),
   })
   .unknown(); // ignore other ENVs
 
@@ -36,6 +37,7 @@ const database: DatabaseConfig = {
 };
 
 const jwtSecret: string = envVars.JWT_SECRET;
+const jwtLifespan: number = envVars.JWT_LIFESPAN;
 
-export { database, jwtSecret };
+export { database, jwtSecret, jwtLifespan };
 export * from "./logger";

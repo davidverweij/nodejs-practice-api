@@ -22,7 +22,7 @@ class UserGroupService {
         if (!user) {
           throw new NotFoundError(`User '${userId}' not found.`);
         }
-        return user.addGroup(group);
+        return user.addGroup(group, { transaction });
       });
 
       await Promise.all(userUpdates);

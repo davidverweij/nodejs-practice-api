@@ -18,6 +18,24 @@ const sequelize = new Sequelize(
   }
 );
 
+const initModels = (sequelizeInstance: Sequelize) => {
+  User.initModel(sequelizeInstance);
+  Group.initModel(sequelizeInstance);
+  UserGroup.initModel(sequelizeInstance);
+  ApiUser.initModel(sequelizeInstance);
+
+  User.belongsToMany(Group, {
+    through: UserGroup,
+    foreignKey: "user_id",
+    otherKey: "group_id",
+  });
+  Group.belongsToMany(User, {
+    through: UserGroup,
+    foreignKey: "group_id",
+    otherKey: "user_id",
+  });
+};
+
 /**
  * Opens a connection with PostgreSQL, failes if authentication fails.
  *
@@ -28,24 +46,10 @@ const setupDatabase = async (): Promise<void> => {
     // authenticate
     await sequelize.authenticate();
     // initialise ORM
-    User.initModel(sequelize);
-    Group.initModel(sequelize);
-    UserGroup.initModel(sequelize);
-    ApiUser.initModel(sequelize);
-
-    User.belongsToMany(Group, {
-      through: UserGroup,
-      foreignKey: "user_id",
-      otherKey: "group_id",
-    });
-    Group.belongsToMany(User, {
-      through: UserGroup,
-      foreignKey: "group_id",
-      otherKey: "user_id",
-    });
+    initModels(sequelize);
   } catch (error) {
     throw new Error("Database connection failed.");
   }
 };
 
-export { sequelize, setupDatabase };
+export { sequelize, setupDatabase, initModels };

@@ -82,6 +82,7 @@ const errorLoggerMiddleware = expressWinston.errorLogger({
 });
 
 export {
+  logger,
   loggerMiddleware,
   errorLoggerMiddleware,
   errorLogger,
